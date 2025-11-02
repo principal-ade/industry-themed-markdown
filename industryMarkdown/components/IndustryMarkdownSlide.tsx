@@ -62,7 +62,7 @@
 import { Theme, theme as defaultTheme } from '@a24z/industry-theme';
 import { BashCommandOptions, BashCommandResult, RepositoryInfo } from '@a24z/markdown-utils';
 import { defaultSchema } from 'hast-util-sanitize';
-import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useRef, useEffect, useLayoutEffect, useState, useMemo, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
@@ -480,7 +480,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   repositoryInfo,
 }: IndustryMarkdownSlideProps) {
   const slideRef = useRef<HTMLDivElement>(null);
-  const scrollPositionRef = useRef<number>(0);
+  const scrollPositionsRef = useRef<Map<number, number>>(new Map());
 
   // State for measured container width when containerWidth prop is not provided
   const [measuredContainerWidth, setMeasuredContainerWidth] = useState<number | null>(null);
@@ -844,12 +844,12 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     return `${top}px ${right}px ${bottom}px ${left}px`;
   }, [calculateSlidePadding.horizontal, calculateSlidePadding.vertical, additionalPadding]);
 
-  // Save scroll position before update
+  // Save scroll position per slide
   useEffect(() => {
     const slideElement = slideRef.current;
     if (slideElement) {
       const handleScroll = () => {
-        scrollPositionRef.current = slideElement.scrollTop || 0;
+        scrollPositionsRef.current.set(slideIndex, slideElement.scrollTop || 0);
       };
 
       slideElement.addEventListener('scroll', handleScroll);
@@ -858,14 +858,16 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       };
     }
     return undefined;
-  }, []);
+  }, [slideIndex]);
 
-  // Restore scroll position after update
-  useEffect(() => {
-    if (slideRef.current && scrollPositionRef.current) {
-      slideRef.current.scrollTop = scrollPositionRef.current;
+  // Restore scroll position for current slide (or start at top if first visit)
+  // Use useLayoutEffect to restore scroll position synchronously before paint
+  useLayoutEffect(() => {
+    if (slideRef.current) {
+      const savedPosition = scrollPositionsRef.current.get(slideIndex) ?? 0;
+      slideRef.current.scrollTop = savedPosition;
     }
-  }, [content]); // Re-run when content changes
+  }, [slideIndex]); // Re-run when slide changes
 
   // Configure sanitization to allow highlight.js classes and style attributes
   const sanitizeSchema = useMemo(
