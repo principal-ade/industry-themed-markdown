@@ -4,8 +4,8 @@
     "": {
       "name": "themed-markdown",
       "dependencies": {
-        "@a24z/industry-theme": "^0.1.0",
-        "@a24z/markdown-utils": "^0.1.2",
+        "@a24z/industry-theme": "^0.1.1",
+        "@a24z/markdown-utils": "^0.1.3",
         "@a24z/panels": "latest",
         "@modelcontextprotocol/sdk": "^1.0.4",
         "@types/d3-hierarchy": "^3.1.7",
@@ -108,9 +108,9 @@
     },
   },
   "packages": {
-    "@a24z/industry-theme": ["@a24z/industry-theme@0.1.0", "", { "peerDependencies": { "react": ">=19.0.0", "react-dom": ">=19.0.0" } }, "sha512-hIDcg1xDwHTl+pY4X7wuqEDqhYFvax92vOlqxwG5qHIbFV/+W3OUBHgkkreJ9cqTL930lh8JT64aRO5VibWiZQ=="],
+    "@a24z/industry-theme": ["@a24z/industry-theme@0.1.2", "", { "peerDependencies": { "react": ">=19.0.0" } }, "sha512-1NtEJMjkwCyYr/liMG8xSDaLEpKKbncwyirWL05VPfHHxNeTPSncDbbH+cQTCK4kS94FgDfxFsAftKQ3M/ZzOg=="],
 
-    "@a24z/markdown-utils": ["@a24z/markdown-utils@0.1.2", "", {}, "sha512-dYYK1pGa3MUZByLqTgelRiZqe+k7V6X4gj3UEWYlT17HJ4lbfGoL9FupSoFuBoiufnM6FgXoeE209McOw3vFoQ=="],
+    "@a24z/markdown-utils": ["@a24z/markdown-utils@0.1.3", "", {}, "sha512-+fJniqhqPkPw55r52qtnRPvoRucZXqvYWdnP4PtKxGVdBZbN76dvsn15pD6D0MS6xOBrzU48T9AXB9vctmQOFA=="],
 
     "@a24z/panels": ["@a24z/panels@1.0.6", "", { "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0", "react-resizable-panels": "^2.0.0" } }, "sha512-/7iZeqfQBHxAXnJsr7ZaGi72SGlkgM+fesRfogkhEfX8HBl/At6SAMwy2AnAwzMtnt/Cmifp8osISAZ3b0xLdg=="],
 

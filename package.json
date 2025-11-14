@@ -45,7 +45,7 @@
   "license": "MIT",
   "dependencies": {
     "@a24z/industry-theme": "^0.1.1",
-    "@a24z/markdown-utils": "^0.1.2",
+    "@a24z/markdown-utils": "^0.1.3",
     "@a24z/panels": "latest",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "@types/d3-hierarchy": "^3.1.7",
