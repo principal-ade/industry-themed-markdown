@@ -20,7 +20,7 @@
     "build": "bun run clean && bun run build:esm && bun run build:types && bun run copy:css",
     "build:esm": "bun build ./index.ts --outfile ./dist/index.mjs --format esm --target browser --external react --external react-dom --external react-markdown --external lucide-react --external react-zoom-pan-pinch --external remark-gfm --external rehype-raw --external rehype-highlight --external rehype-sanitize --external rehype-slug --external hast-util-sanitize --external highlight.js",
     "build:types": "tsc --emitDeclarationOnly --declaration --declarationMap",
-    "copy:css": "cp node_modules/highlight.js/styles/atom-one-dark.css ./dist/index.css && cat node_modules/@principal-ade/panels/dist/style.css >> ./dist/index.css",
+    "copy:css": "cp node_modules/highlight.js/styles/atom-one-dark.css ./dist/index.css && cat node_modules/@principal-ade/panels/dist/panels.css >> ./dist/index.css",
     "dev": "bun run build --watch",
     "test": "bun test",
     "test:watch": "bun test --watch",

@@ -2,7 +2,7 @@ import React from 'react';
 import type { Preview } from '@storybook/react';
 import { ThemeProvider, theme } from '@principal-ade/industry-theme';
 import 'highlight.js/styles/atom-one-dark.css';
-import '@principal-ade/panels/dist/style.css';
+import '@principal-ade/panels/dist/panels.css';
 
 // Dynamically import mermaid for Storybook
 if (typeof window !== 'undefined') {
