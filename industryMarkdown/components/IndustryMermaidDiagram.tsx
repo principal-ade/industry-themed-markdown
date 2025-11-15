@@ -5,7 +5,7 @@
  * This is a replacement for ConfigurableMermaidDiagram that doesn't depend on the old theme system
  */
 
-import { Theme, theme as defaultTheme } from '@a24z/industry-theme';
+import { Theme, theme as defaultTheme } from '@principal-ade/industry-theme';
 import { Expand, Copy, Check } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 

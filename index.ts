@@ -71,15 +71,15 @@ export type {
 } from './industryMarkdown/types/customMarkdownChunks';
 
 // Theme system
-export type { Theme } from '@a24z/industry-theme';
-export { theme as defaultTheme } from '@a24z/industry-theme';
-export { ThemeProvider, withTheme } from '@a24z/industry-theme';
+export type { Theme } from '@principal-ade/industry-theme';
+export { theme as defaultTheme } from '@principal-ade/industry-theme';
+export { ThemeProvider, withTheme } from '@principal-ade/industry-theme';
 export {
   scaleThemeFonts,
   increaseFontScale,
   decreaseFontScale,
   resetFontScale,
-} from '@a24z/industry-theme';
+} from '@principal-ade/industry-theme';
 
 // Export all available themes
 export {
@@ -89,4 +89,4 @@ export {
   matrixTheme,
   matrixMinimalTheme,
   slateTheme,
-} from '@a24z/industry-theme';
+} from '@principal-ade/industry-theme';

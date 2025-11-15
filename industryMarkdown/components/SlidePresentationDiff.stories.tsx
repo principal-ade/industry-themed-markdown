@@ -1,5 +1,5 @@
-import { theme } from '@a24z/industry-theme';
-import { parseMarkdownIntoPresentation } from '@a24z/markdown-utils';
+import { theme } from '@principal-ade/industry-theme';
+import { parseMarkdownIntoPresentation } from '@principal-ade/markdown-utils';
 import type { Meta, StoryObj } from '@storybook/react';
 
 import { SlidePresentationDiff } from './SlidePresentationDiff';

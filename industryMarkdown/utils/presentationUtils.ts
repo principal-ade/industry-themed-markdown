@@ -7,7 +7,7 @@ import {
   parseMarkdownChunks,
   extractSlideTitle as extractSlideTitleCore,
   parseMarkdownIntoPresentation as parseMarkdownIntoPresentationCore,
-} from '@a24z/markdown-utils';
+} from '@principal-ade/markdown-utils';
 
 /**
  * Extract the title from slide content (first heading or first line)

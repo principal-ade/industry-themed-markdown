@@ -1,4 +1,4 @@
-import { Theme } from '@a24z/industry-theme';
+import { Theme } from '@principal-ade/industry-theme';
 import {
   ChevronLeft,
   ChevronRight,

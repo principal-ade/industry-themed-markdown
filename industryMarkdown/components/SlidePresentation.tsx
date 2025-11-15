@@ -1,6 +1,6 @@
-import { Theme } from '@a24z/industry-theme';
-import { BashCommandOptions, BashCommandResult } from '@a24z/markdown-utils';
-import { AnimatedResizableLayout } from '@a24z/panels';
+import { Theme } from '@principal-ade/industry-theme';
+import { BashCommandOptions, BashCommandResult } from '@principal-ade/markdown-utils';
+import { AnimatedResizableLayout } from '@principal-ade/panels';
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 
 import { extractAllSlideTitles } from '../utils/extractSlideTitles';
@@ -720,13 +720,7 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
             defaultSize={tocSidebarPosition === 'left' ? 20 : 80}
             minSize={15}
             showCollapseButton={false}
-            theme={{
-              background: theme.colors.background,
-              border: theme.colors.border,
-              handle: theme.colors.border,
-              handleHover: theme.colors.text,
-              handleActive: theme.colors.primary,
-            }}
+            theme={theme}
           />
         ) : (
           // Overlay Mode - original implementation

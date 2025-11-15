@@ -1,4 +1,4 @@
-import { parseMarkdownChunks as parseMarkdownChunksCore } from '@a24z/markdown-utils';
+import { parseMarkdownChunks as parseMarkdownChunksCore } from '@principal-ade/markdown-utils';
 
 /**
  * Parses markdown content within a slide into chunks (markdown and mermaid)

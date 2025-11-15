@@ -6,7 +6,7 @@ import {
   slateTheme,
   terminalTheme,
   useTheme,
-} from '@a24z/industry-theme';
+} from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 

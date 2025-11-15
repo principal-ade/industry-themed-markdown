@@ -5,7 +5,7 @@ import {
   overrideColors,
   makeTheme,
   addMode,
-} from '@a24z/industry-theme';
+} from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 

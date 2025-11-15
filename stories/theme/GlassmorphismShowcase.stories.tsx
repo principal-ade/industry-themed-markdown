@@ -1,4 +1,4 @@
-import { ThemeProvider, useTheme, glassmorphismTheme } from '@a24z/industry-theme';
+import { ThemeProvider, useTheme, glassmorphismTheme } from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 

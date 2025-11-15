@@ -8,7 +8,7 @@ import {
   regalTheme,
   slateTheme,
   terminalTheme,
-} from '@a24z/industry-theme';
+} from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 

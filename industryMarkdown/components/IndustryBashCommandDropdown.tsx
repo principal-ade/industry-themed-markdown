@@ -1,5 +1,5 @@
-import { Theme, theme as defaultTheme } from '@a24z/industry-theme';
-import { BashCommand, getCommandDisplayName } from '@a24z/markdown-utils';
+import { Theme, theme as defaultTheme } from '@principal-ade/industry-theme';
+import { BashCommand, getCommandDisplayName } from '@principal-ade/markdown-utils';
 import { Play, ChevronDown } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 

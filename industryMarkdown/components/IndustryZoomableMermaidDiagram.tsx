@@ -1,4 +1,4 @@
-import { Theme, theme as defaultTheme } from '@a24z/industry-theme';
+import { Theme, theme as defaultTheme } from '@principal-ade/industry-theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 

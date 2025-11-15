@@ -1,6 +1,6 @@
-import { Theme } from '@a24z/industry-theme';
-import { diffPresentations, PresentationDiff, SlideDiff , MarkdownPresentation } from '@a24z/markdown-utils';
-import { AnimatedResizableLayout } from '@a24z/panels';
+import { Theme } from '@principal-ade/industry-theme';
+import { diffPresentations, PresentationDiff, SlideDiff , MarkdownPresentation } from '@principal-ade/markdown-utils';
+import { AnimatedResizableLayout } from '@principal-ade/panels';
 import React, { useMemo, useState } from 'react';
 
 import { IndustryMarkdownSlide } from './IndustryMarkdownSlide';

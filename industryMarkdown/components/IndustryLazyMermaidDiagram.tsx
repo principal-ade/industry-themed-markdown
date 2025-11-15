@@ -1,4 +1,4 @@
-import { Theme, theme as defaultTheme } from '@a24z/industry-theme';
+import { Theme, theme as defaultTheme } from '@principal-ade/industry-theme';
 import { MoveRight } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 

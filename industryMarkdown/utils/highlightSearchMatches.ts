@@ -1,4 +1,4 @@
-import { Theme } from '@a24z/industry-theme';
+import { Theme } from '@principal-ade/industry-theme';
 
 /**
  * Highlights search matches in markdown content by wrapping them with <mark> tags

@@ -1,4 +1,4 @@
-import { ThemeProvider, theme } from '@a24z/industry-theme';
+import { ThemeProvider, theme } from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 

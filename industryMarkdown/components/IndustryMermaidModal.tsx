@@ -1,4 +1,4 @@
-import { Theme } from '@a24z/industry-theme';
+import { Theme } from '@principal-ade/industry-theme';
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
