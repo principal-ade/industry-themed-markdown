@@ -78,8 +78,23 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
   fontSizeScale,
   theme,
 }) => {
+  // Detect if we're on a mobile device
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Smart default: sidebar for single view, overlay for book view
-  const effectiveTocDisplayMode = tocDisplayMode ?? (viewMode === 'single' ? 'sidebar' : 'overlay');
+  // But force overlay on mobile in single mode
+  const effectiveTocDisplayMode = isMobile && viewMode === 'single'
+    ? 'overlay'
+    : (tocDisplayMode ?? (viewMode === 'single' ? 'sidebar' : 'overlay'));
   // Default to closed for both sidebar and overlay modes
   const defaultTocOpen = initialTocOpen ?? false;
   // Ensure initial slide is even in book mode for proper page pairing
@@ -398,6 +413,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
           showFullscreenButton={showFullscreenButton}
           showPopoutButton={showPopoutButton}
           isPopout={isPopout}
+          isMobile={isMobile}
           theme={theme}
           viewMode={viewMode}
           tocDisplayMode={effectiveTocDisplayMode}
