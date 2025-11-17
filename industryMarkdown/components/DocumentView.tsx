@@ -39,7 +39,7 @@ export interface DocumentViewProps {
 
 export const DocumentView: React.FC<DocumentViewProps> = ({
   content,
-  showSegmented = true,
+  showSegmented = false,
   onCheckboxChange,
   onSectionClick,
   maxWidth = '900px',
@@ -89,13 +89,13 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           height: '100%',
           overflow: 'auto',
           backgroundColor: backgroundColor,
-          padding: typeof padding === 'number' ? `${padding}px` : padding,
         }}
       >
         <div
           style={{
             maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
             margin: '0 auto',
+            height: '100%',
           }}
         >
           <IndustryMarkdownSlide
@@ -112,6 +112,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
             fontSizeScale={fontSizeScale}
             handlePromptCopy={handlePromptCopy}
             repositoryInfo={repositoryInfo}
+            transparentBackground={transparentBackground}
           />
         </div>
       </div>
@@ -128,13 +129,13 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           height: '100%',
           overflow: 'auto',
           backgroundColor: backgroundColor,
-          padding: typeof padding === 'number' ? `${padding}px` : padding,
         }}
       >
         <div
           style={{
             maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
             margin: '0 auto',
+            height: '100%',
           }}
         >
           <IndustryMarkdownSlide
@@ -151,6 +152,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
             fontSizeScale={fontSizeScale}
             handlePromptCopy={handlePromptCopy}
             repositoryInfo={repositoryInfo}
+            transparentBackground={transparentBackground}
           />
         </div>
       </div>
@@ -165,7 +167,6 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
         height: '100%',
         overflow: 'auto',
         backgroundColor: backgroundColor,
-        padding: typeof padding === 'number' ? `${padding}px` : padding,
       }}
     >
       <div
@@ -238,6 +239,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
               fontSizeScale={fontSizeScale}
               handlePromptCopy={handlePromptCopy}
               repositoryInfo={repositoryInfo}
+              transparentBackground={transparentBackground}
             />
 
             {/* Separator between sections */}
