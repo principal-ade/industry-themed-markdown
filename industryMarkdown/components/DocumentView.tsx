@@ -17,7 +17,6 @@ export interface DocumentViewProps {
 
   // Layout options
   maxWidth?: string | number;
-  padding?: string | number;
   showSectionHeaders?: boolean;
   showSeparators?: boolean;
 
@@ -44,7 +43,6 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
   onCheckboxChange,
   onSectionClick,
   maxWidth = '900px',
-  padding = '24px',
   showSectionHeaders = true,
   showSeparators = true,
   slideIdPrefix = 'document',

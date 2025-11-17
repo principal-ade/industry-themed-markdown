@@ -172,7 +172,6 @@ export const SingleDocument: Story = {
     content: singleDocumentContent,
     showSegmented: false,
     maxWidth: '900px',
-    padding: '24px',
     slideIdPrefix: 'doc',
   },
 };
@@ -184,7 +183,6 @@ export const SegmentedDocument: Story = {
     showSectionHeaders: true,
     showSeparators: true,
     maxWidth: '900px',
-    padding: '24px',
     slideIdPrefix: 'segment',
   },
 };
@@ -194,7 +192,6 @@ export const DarkThemeDocument: Story = {
     content: singleDocumentContent,
     showSegmented: false,
     maxWidth: '900px',
-    padding: '24px',
     slideIdPrefix: 'dark-doc',
   },
 };
@@ -204,7 +201,6 @@ export const WideDocument: Story = {
     content: singleDocumentContent,
     showSegmented: false,
     maxWidth: '1400px',
-    padding: '32px',
     slideIdPrefix: 'wide-doc',
   },
 };
@@ -216,7 +212,6 @@ export const CompactSegments: Story = {
     showSectionHeaders: false,
     showSeparators: false,
     maxWidth: '800px',
-    padding: '16px',
     slideIdPrefix: 'compact',
   },
 };
@@ -275,7 +270,6 @@ function TodoList({ items }) {
 - [API Reference](https://api.example.com)`,
     showSegmented: false,
     maxWidth: '900px',
-    padding: '24px',
     slideIdPrefix: 'interactive',
     onCheckboxChange: (slideIndex, lineNumber, checked) => {
       console.log('Checkbox changed:', { slideIndex, lineNumber, checked });
@@ -445,7 +439,6 @@ classDiagram
 \`\`\``,
     showSegmented: false,
     maxWidth: '1000px',
-    padding: '24px',
     slideIdPrefix: 'mermaid-doc',
   },
 };
@@ -455,7 +448,6 @@ export const TransparentBackground: Story = {
     content: singleDocumentContent,
     showSegmented: false,
     maxWidth: '900px',
-    padding: '24px',
     slideIdPrefix: 'transparent-doc',
     transparentBackground: true,
   },
