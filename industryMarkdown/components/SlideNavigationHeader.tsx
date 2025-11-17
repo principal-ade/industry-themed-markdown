@@ -98,6 +98,7 @@ export interface SlideNavigationHeaderProps {
   showFullscreenButton: boolean;
   showPopoutButton?: boolean;
   isPopout?: boolean;
+  isMobile?: boolean;
   theme: Theme;
   viewMode?: 'single' | 'book';
   tocDisplayMode?: 'overlay' | 'sidebar';
@@ -124,6 +125,7 @@ export const SlideNavigationHeader: React.FC<SlideNavigationHeaderProps> = ({
   showFullscreenButton,
   showPopoutButton = false,
   isPopout = false,
+  isMobile = false,
   theme,
   viewMode = 'single',
   tocDisplayMode = 'overlay',
@@ -185,10 +187,11 @@ export const SlideNavigationHeader: React.FC<SlideNavigationHeaderProps> = ({
           disabled={currentSlide === 0}
           theme={theme}
           title="Previous slide"
-          minWidth="100px"
+          minWidth={isMobile ? undefined : "100px"}
+          width={isMobile ? "36px" : undefined}
         >
           <ChevronLeft size={18} />
-          Previous
+          {!isMobile && 'Previous'}
         </HeaderButton>
 
         {/* Focus/Expand Left Panel button (for book mode) */}
@@ -280,9 +283,10 @@ export const SlideNavigationHeader: React.FC<SlideNavigationHeaderProps> = ({
           disabled={currentSlide === totalSlides - 1}
           theme={theme}
           title="Next slide"
-          minWidth="100px"
+          minWidth={isMobile ? undefined : "100px"}
+          width={isMobile ? "36px" : undefined}
         >
-          Next
+          {!isMobile && 'Next'}
           <ChevronRight size={18} />
         </HeaderButton>
 
@@ -299,8 +303,15 @@ export const SlideNavigationHeader: React.FC<SlideNavigationHeaderProps> = ({
         {showFullscreenButton && !showPopoutButton && (
           <HeaderButton
             onClick={onToggleFullscreen}
+            disabled={isMobile}
             theme={theme}
-            title={isFullscreen ? 'Exit fullscreen (F)' : 'Enter fullscreen (F)'}
+            title={
+              isMobile
+                ? 'Fullscreen not available on mobile'
+                : isFullscreen
+                  ? 'Exit fullscreen (F)'
+                  : 'Enter fullscreen (F)'
+            }
           >
             {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
           </HeaderButton>

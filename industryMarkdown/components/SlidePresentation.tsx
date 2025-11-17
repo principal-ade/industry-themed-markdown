@@ -76,8 +76,23 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
   fontSizeScale,
   theme,
 }) => {
+  // Detect if we're on a mobile device
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Force overlay mode on mobile, otherwise use the provided mode
+  const effectiveTocDisplayMode = isMobile ? 'overlay' : tocDisplayMode;
+
   // Smart default: open by default in sidebar mode, closed in overlay mode
-  const defaultTocOpen = initialTocOpen ?? (tocDisplayMode === 'sidebar');
+  const defaultTocOpen = initialTocOpen ?? (effectiveTocDisplayMode === 'sidebar');
   const [currentSlide, setCurrentSlide] = useState(initialSlide);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTOC, setShowTOC] = useState(defaultTocOpen);
@@ -99,12 +114,12 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
         onSlideChange?.(slideIndex);
         // In overlay mode, close TOC when navigating
         // In sidebar mode, keep TOC open for easy navigation
-        if (tocDisplayMode === 'overlay') {
+        if (effectiveTocDisplayMode === 'overlay') {
           setShowTOC(false);
         }
       }
     },
-    [slides.length, onSlideChange, tocDisplayMode],
+    [slides.length, onSlideChange, effectiveTocDisplayMode],
   );
 
   // Search functionality - only rebuild when query or slides change, not currentSlide
@@ -370,7 +385,8 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
           showPopoutButton={showPopoutButton}
           isPopout={isPopout}
           theme={theme}
-          tocDisplayMode={tocDisplayMode}
+          tocDisplayMode={effectiveTocDisplayMode}
+          isMobile={isMobile}
           onPrevious={goToPreviousSlide}
           onNext={goToNextSlide}
           onToggleTOC={() => setShowTOC(prev => !prev)}
@@ -389,7 +405,7 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
           display: 'flex',
         }}
       >
-        {tocDisplayMode === 'sidebar' ? (
+        {effectiveTocDisplayMode === 'sidebar' ? (
           // Sidebar Mode with AnimatedResizableLayout
           <AnimatedResizableLayout
             key={`toc-${tocSidebarPosition}`}
@@ -729,135 +745,8 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
         ) : (
           // Overlay Mode - original implementation
           <>
-            {/* Table of Contents Overlay */}
-            {showTOC && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  bottom: 0,
-                  width: '300px',
-                  backgroundColor: theme.colors.backgroundSecondary,
-                  borderRight: `1px solid ${theme.colors.border}`,
-                  zIndex: 10,
-                  overflowY: 'auto',
-                  overflowX: 'hidden',
-                }}
-              >
-            {/* TOC Header */}
-            <div
-              style={{
-                padding: theme.space[3],
-                borderBottom: `1px solid ${theme.colors.border}`,
-                backgroundColor: theme.colors.background,
-                position: 'sticky',
-                top: 0,
-                zIndex: 1,
-              }}
-            >
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: theme.fontSizes[3],
-                  fontFamily: theme.fonts.heading,
-                  color: theme.colors.text,
-                  fontWeight: 600,
-                }}
-              >
-                Table of Contents
-              </h3>
-              <p
-                style={{
-                  margin: `${theme.space[1]}px 0 0 0`,
-                  fontSize: theme.fontSizes[0],
-                  color: theme.colors.textSecondary,
-                  fontFamily: theme.fonts.body,
-                }}
-              >
-                {slides.length} {slides.length === 1 ? 'slide' : 'slides'}
-              </p>
-            </div>
-
-            {/* TOC Items */}
-            <div style={{ padding: theme.space[2] }}>
-              {slideTitles.map((title, index) => (
-                <button
-                  key={index}
-                  onClick={() => navigateToSlide(index)}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: `${theme.space[2]}px ${theme.space[3]}px`,
-                    marginBottom: theme.space[1],
-                    backgroundColor: currentSlide === index ? theme.colors.primary : 'transparent',
-                    border: 'none',
-                    borderRadius: theme.radii[1],
-                    color: currentSlide === index ? theme.colors.background : theme.colors.text,
-                    fontSize: theme.fontSizes[1],
-                    fontFamily: theme.fonts.body,
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    position: 'relative',
-                  }}
-                  onMouseOver={e => {
-                    if (currentSlide !== index) {
-                      e.currentTarget.style.backgroundColor = theme.colors.backgroundHover;
-                    }
-                  }}
-                  onMouseOut={e => {
-                    if (currentSlide !== index) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.space[2] }}>
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        minWidth: '24px',
-                        fontSize: theme.fontSizes[0],
-                        fontFamily: theme.fonts.monospace,
-                        opacity: 0.6,
-                      }}
-                    >
-                      {index + 1}.
-                    </span>
-                    <span
-                      style={{
-                        flex: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {title}
-                    </span>
-                  </div>
-                  {currentSlide === index && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: '3px',
-                        height: '60%',
-                        backgroundColor:
-                          currentSlide === index ? theme.colors.background : theme.colors.primary,
-                        borderRadius: '0 2px 2px 0',
-                      }}
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Table of Contents Sidebar (Overlay Mode) */}
-        {tocDisplayMode === 'overlay' && (
+        {effectiveTocDisplayMode === 'overlay' && (
           <div
             style={{
               position: 'absolute',
@@ -986,7 +875,7 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
         )}
 
         {/* Overlay to close TOC when clicking outside (Overlay Mode Only) */}
-        {tocDisplayMode === 'overlay' && showTOC && (
+        {effectiveTocDisplayMode === 'overlay' && showTOC && (
           <div
             onClick={() => setShowTOC(false)}
             style={{
