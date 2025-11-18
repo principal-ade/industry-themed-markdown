@@ -789,13 +789,28 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
           <div
             style={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              bottom: 0,
-              width: '300px',
+              ...(isMobile
+                ? {
+                    // Mobile: slide up from bottom
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    width: '100%',
+                    maxHeight: '70vh',
+                    borderTop: `1px solid ${theme.colors.border}`,
+                    borderRadius: `${theme.radii[2]}px ${theme.radii[2]}px 0 0`,
+                    transform: showTOC ? 'translateY(0)' : 'translateY(100%)',
+                  }
+                : {
+                    // Desktop: slide in from left
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    width: '300px',
+                    borderRight: `1px solid ${theme.colors.border}`,
+                    transform: showTOC ? 'translateX(0)' : 'translateX(-100%)',
+                  }),
               backgroundColor: theme.colors.backgroundSecondary,
-              borderRight: `1px solid ${theme.colors.border}`,
-              transform: showTOC ? 'translateX(0)' : 'translateX(-100%)',
               transition: 'transform 0.3s ease',
               zIndex: 10,
               overflowY: 'auto',
