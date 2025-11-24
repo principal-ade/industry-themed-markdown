@@ -12,6 +12,8 @@ export interface SlidePresentationDiffProps {
   afterPresentation: MarkdownPresentation;
   /** Theme to apply */
   theme?: Theme;
+  /** Control whether visible slides automatically capture focus */
+  autoFocusOnVisible?: boolean;
   /** Show only slides with changes */
   showOnlyChanged?: boolean;
   /** Initial slide index to display */
@@ -30,6 +32,7 @@ export function SlidePresentationDiff({
   beforePresentation,
   afterPresentation,
   theme,
+  autoFocusOnVisible = true,
   showOnlyChanged: initialShowOnlyChanged = false,
   initialSlideIndex = 0,
   onSlideChange,
@@ -245,6 +248,7 @@ export function SlidePresentationDiff({
                     slideIdPrefix={`diff-before-${currentDiff.beforeIndex || 0}`}
                     slideIndex={currentDiff.beforeIndex || 0}
                     theme={theme}
+                    autoFocusOnVisible={autoFocusOnVisible}
                   />
                 </>
               ) : (
@@ -287,6 +291,7 @@ export function SlidePresentationDiff({
                     slideIdPrefix={`diff-after-${currentDiff.afterIndex || 0}`}
                     slideIndex={currentDiff.afterIndex || 0}
                     theme={theme}
+                    autoFocusOnVisible={autoFocusOnVisible}
                   />
                 </>
               ) : (

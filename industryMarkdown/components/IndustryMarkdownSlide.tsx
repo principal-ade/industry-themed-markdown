@@ -100,6 +100,7 @@ export interface IndustryMarkdownSlideProps {
 
   // === Feature Toggles ===
   enableHtmlPopout?: boolean;
+  autoFocusOnVisible?: boolean;
 
   // === Search ===
   searchQuery?: string; // Search query for highlighting matches
@@ -455,6 +456,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
 
   // === Feature Toggles ===
   enableHtmlPopout = true,
+  autoFocusOnVisible = true,
 
   // === Search ===
   searchQuery,
@@ -748,13 +750,13 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     [enableKeyboardScrolling, isVisible, slideIndex, scrollConfig],
   );
 
-  // Auto-focus the container when it becomes visible
+  // Auto-focus the container when it becomes visible (optional)
   useEffect(() => {
-    if (isVisible && slideRef.current) {
+    if (autoFocusOnVisible && isVisible && slideRef.current) {
       console.log('🎯 Auto-focusing slide container');
       slideRef.current.focus();
     }
-  }, [isVisible]);
+  }, [autoFocusOnVisible, isVisible]);
 
   const openPlaceholderModal = (placeholders: string[], promptContent: string) => {
     if (!handlePromptCopy) return; // Only allow modal if handlePromptCopy is provided

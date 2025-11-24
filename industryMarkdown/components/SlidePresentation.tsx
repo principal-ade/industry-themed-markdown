@@ -39,6 +39,7 @@ export interface SlidePresentationProps {
   slideIdPrefix?: string;
   enableHtmlPopout?: boolean;
   enableKeyboardScrolling?: boolean;
+  autoFocusOnVisible?: boolean;
   onLinkClick?: (href: string, event?: MouseEvent) => void;
   handleRunBashCommand?: (
     command: string,
@@ -68,6 +69,7 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
   slideIdPrefix = 'slide',
   enableHtmlPopout = true,
   enableKeyboardScrolling = true,
+  autoFocusOnVisible = true,
   onLinkClick,
   handleRunBashCommand,
   handlePromptCopy,
@@ -526,14 +528,15 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
                       content={slides[currentSlide] || ''}
                       slideIdPrefix={`${slideIdPrefix}-${currentSlide}`}
                       slideIndex={currentSlide}
-                      isVisible={true}
-                      theme={theme}
-                      onCheckboxChange={onCheckboxChange}
-                      enableHtmlPopout={enableHtmlPopout}
-                      enableKeyboardScrolling={enableKeyboardScrolling}
-                      onLinkClick={onLinkClick}
-                      handleRunBashCommand={handleRunBashCommand}
-                      handlePromptCopy={handlePromptCopy}
+                    isVisible={true}
+                    theme={theme}
+                    onCheckboxChange={onCheckboxChange}
+                    enableHtmlPopout={enableHtmlPopout}
+                    enableKeyboardScrolling={enableKeyboardScrolling}
+                    autoFocusOnVisible={autoFocusOnVisible}
+                    onLinkClick={onLinkClick}
+                    handleRunBashCommand={handleRunBashCommand}
+                    handlePromptCopy={handlePromptCopy}
                       fontSizeScale={fontSizeScale}
                       searchQuery={showSearch ? searchQuery : undefined}
                     />
@@ -688,14 +691,15 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
                       content={slides[currentSlide] || ''}
                       slideIdPrefix={`${slideIdPrefix}-${currentSlide}`}
                       slideIndex={currentSlide}
-                      isVisible={true}
-                      theme={theme}
-                      onCheckboxChange={onCheckboxChange}
-                      enableHtmlPopout={enableHtmlPopout}
-                      enableKeyboardScrolling={enableKeyboardScrolling}
-                      onLinkClick={onLinkClick}
-                      handleRunBashCommand={handleRunBashCommand}
-                      handlePromptCopy={handlePromptCopy}
+                    isVisible={true}
+                    theme={theme}
+                    onCheckboxChange={onCheckboxChange}
+                    enableHtmlPopout={enableHtmlPopout}
+                    enableKeyboardScrolling={enableKeyboardScrolling}
+                    autoFocusOnVisible={autoFocusOnVisible}
+                    onLinkClick={onLinkClick}
+                    handleRunBashCommand={handleRunBashCommand}
+                    handlePromptCopy={handlePromptCopy}
                       fontSizeScale={fontSizeScale}
                       searchQuery={showSearch ? searchQuery : undefined}
                     />
@@ -1015,6 +1019,7 @@ export const SlidePresentation: React.FC<SlidePresentationProps> = ({
               onCheckboxChange={onCheckboxChange}
               enableHtmlPopout={enableHtmlPopout}
               enableKeyboardScrolling={enableKeyboardScrolling}
+              autoFocusOnVisible={autoFocusOnVisible}
               onLinkClick={onLinkClick}
               handleRunBashCommand={handleRunBashCommand}
               handlePromptCopy={handlePromptCopy}
