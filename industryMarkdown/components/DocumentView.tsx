@@ -25,6 +25,7 @@ export interface DocumentViewProps {
   slideIdPrefix?: string;
   enableHtmlPopout?: boolean;
   enableKeyboardScrolling?: boolean;
+  autoFocusOnVisible?: boolean;
   onLinkClick?: (href: string, event?: MouseEvent) => void;
   handleRunBashCommand?: (
     command: string,
@@ -49,6 +50,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
   slideIdPrefix = 'document',
   enableHtmlPopout = true,
   enableKeyboardScrolling = true,
+  autoFocusOnVisible = true,
   onLinkClick,
   handleRunBashCommand,
   handlePromptCopy,
@@ -107,6 +109,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
             onCheckboxChange={onCheckboxChange}
             enableHtmlPopout={enableHtmlPopout}
             enableKeyboardScrolling={enableKeyboardScrolling}
+            autoFocusOnVisible={autoFocusOnVisible}
             onLinkClick={onLinkClick}
             handleRunBashCommand={handleRunBashCommand}
             fontSizeScale={fontSizeScale}
@@ -146,6 +149,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
             onCheckboxChange={onCheckboxChange}
             enableHtmlPopout={enableHtmlPopout}
             enableKeyboardScrolling={enableKeyboardScrolling}
+            autoFocusOnVisible={autoFocusOnVisible}
             onLinkClick={onLinkClick}
             handleRunBashCommand={handleRunBashCommand}
             fontSizeScale={fontSizeScale}
@@ -227,15 +231,16 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
             <IndustryMarkdownSlide
               content={slideContent}
               slideIdPrefix={`${slideIdPrefix}-${index}`}
-              slideIndex={index}
-              isVisible={true}
-              theme={theme}
-              onCheckboxChange={onCheckboxChange}
-              enableHtmlPopout={enableHtmlPopout}
-              enableKeyboardScrolling={enableKeyboardScrolling}
-              onLinkClick={onLinkClick}
-              handleRunBashCommand={handleRunBashCommand}
-              fontSizeScale={fontSizeScale}
+                slideIndex={index}
+                isVisible={true}
+                theme={theme}
+                onCheckboxChange={onCheckboxChange}
+                enableHtmlPopout={enableHtmlPopout}
+                enableKeyboardScrolling={enableKeyboardScrolling}
+                autoFocusOnVisible={autoFocusOnVisible}
+                onLinkClick={onLinkClick}
+                handleRunBashCommand={handleRunBashCommand}
+                fontSizeScale={fontSizeScale}
               handlePromptCopy={handlePromptCopy}
               repositoryInfo={repositoryInfo}
             />

@@ -40,6 +40,7 @@ export interface SlidePresentationBookProps {
   slideIdPrefix?: string;
   enableHtmlPopout?: boolean;
   enableKeyboardScrolling?: boolean;
+  autoFocusOnVisible?: boolean;
   onLinkClick?: (href: string, event?: MouseEvent) => void;
   handleRunBashCommand?: (
     command: string,
@@ -70,6 +71,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
   slideIdPrefix = 'slide',
   enableHtmlPopout = true,
   enableKeyboardScrolling = true,
+  autoFocusOnVisible = true,
   onLinkClick,
   handleRunBashCommand,
   handlePromptCopy,
@@ -568,6 +570,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                       onCheckboxChange={onCheckboxChange}
                       enableHtmlPopout={enableHtmlPopout}
                       enableKeyboardScrolling={enableKeyboardScrolling}
+                      autoFocusOnVisible={autoFocusOnVisible}
                       onLinkClick={onLinkClick}
                       handleRunBashCommand={handleRunBashCommand}
                       handlePromptCopy={handlePromptCopy}
@@ -732,6 +735,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                       onCheckboxChange={onCheckboxChange}
                       enableHtmlPopout={enableHtmlPopout}
                       enableKeyboardScrolling={enableKeyboardScrolling}
+                      autoFocusOnVisible={autoFocusOnVisible}
                       onLinkClick={onLinkClick}
                       handleRunBashCommand={handleRunBashCommand}
                       handlePromptCopy={handlePromptCopy}
@@ -1106,6 +1110,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                         onCheckboxChange={onCheckboxChange}
                         enableHtmlPopout={enableHtmlPopout}
                         enableKeyboardScrolling={enableKeyboardScrolling}
+                        autoFocusOnVisible={autoFocusOnVisible}
                         onLinkClick={onLinkClick}
                         handleRunBashCommand={handleRunBashCommand}
                         handlePromptCopy={handlePromptCopy}
@@ -1157,6 +1162,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                           onCheckboxChange={onCheckboxChange}
                           enableHtmlPopout={enableHtmlPopout}
                           enableKeyboardScrolling={enableKeyboardScrolling}
+                          autoFocusOnVisible={autoFocusOnVisible}
                           onLinkClick={onLinkClick}
                           handleRunBashCommand={handleRunBashCommand}
                           handlePromptCopy={handlePromptCopy}
@@ -1245,6 +1251,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                     onCheckboxChange={onCheckboxChange}
                     enableHtmlPopout={enableHtmlPopout}
                     enableKeyboardScrolling={enableKeyboardScrolling}
+                    autoFocusOnVisible={autoFocusOnVisible}
                     onLinkClick={onLinkClick}
                     handleRunBashCommand={handleRunBashCommand}
                     handlePromptCopy={handlePromptCopy}

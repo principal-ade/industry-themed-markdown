@@ -20,6 +20,7 @@ function App() {
         slideIndex={0}
         isVisible={true}
         theme={industryTheme}
+        autoFocusOnVisible={false}
       />
     </ThemeProvider>
   );
@@ -27,6 +28,8 @@ function App() {
 ```
 
 > **Note:** All components accept a `theme` prop. `DocumentView` requires you to pass a theme explicitly. Other components will fall back to `defaultTheme` if one is not provided, but passing your active theme explicitly keeps styling predictable.
+
+Set `autoFocusOnVisible` to `false` to opt out of the default behavior that moves focus (and potentially scrolls) to the slide when it becomes visible.
 
 ## Key Differences from ConfigurableMarkdownSlide
 
