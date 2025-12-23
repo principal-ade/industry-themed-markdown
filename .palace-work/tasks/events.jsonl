@@ -1,3 +1,0 @@
-{"taskId":"task-1759467987214-4ipbd1s2i","timestamp":1759467987214,"eventType":"received","actor":"electron-app"}
-{"taskId":"task-1760490369757-t5f7pd3d6","timestamp":1760490369757,"eventType":"received","actor":"external"}
-{"taskId":"task-1759467987214-4ipbd1s2i","timestamp":1760964268708,"eventType":"completed","actor":"system","details":{"gitRefs":{"commitSha":"manual-completion-1760964268707","branch":"unknown"}}}

@@ -187,8 +187,8 @@ export const SlideNavigationHeader: React.FC<SlideNavigationHeaderProps> = ({
           disabled={currentSlide === 0}
           theme={theme}
           title="Previous slide"
-          minWidth={isMobile ? undefined : "100px"}
-          width={isMobile ? "36px" : undefined}
+          minWidth={isMobile ? undefined : '100px'}
+          width={isMobile ? '36px' : undefined}
         >
           <ChevronLeft size={18} />
           {!isMobile && 'Previous'}
@@ -283,8 +283,8 @@ export const SlideNavigationHeader: React.FC<SlideNavigationHeaderProps> = ({
           disabled={currentSlide === totalSlides - 1}
           theme={theme}
           title="Next slide"
-          minWidth={isMobile ? undefined : "100px"}
-          width={isMobile ? "36px" : undefined}
+          minWidth={isMobile ? undefined : '100px'}
+          width={isMobile ? '36px' : undefined}
         >
           {!isMobile && 'Next'}
           <ChevronRight size={18} />

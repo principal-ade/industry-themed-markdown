@@ -4,7 +4,6 @@ import type { Meta, StoryObj } from '@storybook/react';
 
 import { SlidePresentationDiff } from './SlidePresentationDiff';
 
-
 const meta: Meta<typeof SlidePresentationDiff> = {
   title: 'Components/SlidePresentationDiff',
   component: SlidePresentationDiff,

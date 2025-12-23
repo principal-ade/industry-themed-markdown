@@ -20,6 +20,7 @@ Create a new component that displays side-by-side git diffs for markdown present
    - Add interactive features and navigation
 
 **Why This Separation?**
+
 - `@a24z/markdown-utils` already handles core markdown parsing/presentation logic
 - Diffing is a pure data operation that belongs with other utilities
 - Better testability: pure functions are easier to test than React components
@@ -41,6 +42,7 @@ Create a new component that displays side-by-side git diffs for markdown present
 A React component that accepts two presentation versions and displays them in a side-by-side comparison view.
 
 **Props Interface:**
+
 ```typescript
 interface SlidePresentationDiffProps {
   // The two versions to compare
@@ -48,9 +50,9 @@ interface SlidePresentationDiffProps {
   afterPresentation: MarkdownPresentation;
 
   // Optional configuration
-  showOnlyChanged?: boolean;  // Filter to show only slides with changes
-  initialSlideIndex?: number;  // Starting slide pair
-  theme?: Theme;              // Industry theme
+  showOnlyChanged?: boolean; // Filter to show only slides with changes
+  initialSlideIndex?: number; // Starting slide pair
+  theme?: Theme; // Industry theme
 
   // Callbacks
   onSlideChange?: (beforeIndex: number, afterIndex: number) => void;
@@ -60,16 +62,17 @@ interface SlidePresentationDiffProps {
 ### Supporting Types
 
 **New Type Definitions (`types/diff.ts`):**
+
 ```typescript
 type DiffStatus = 'added' | 'removed' | 'modified' | 'unchanged' | 'moved';
 
 interface SlideDiff {
   status: DiffStatus;
-  beforeSlide?: MarkdownSlide;  // undefined if added
-  afterSlide?: MarkdownSlide;   // undefined if removed
+  beforeSlide?: MarkdownSlide; // undefined if added
+  afterSlide?: MarkdownSlide; // undefined if removed
   beforeIndex?: number;
   afterIndex?: number;
-  contentChanges?: TextDiff[];  // Line-by-line changes
+  contentChanges?: TextDiff[]; // Line-by-line changes
   titleChanged?: boolean;
 }
 
@@ -94,12 +97,14 @@ interface DiffSummary {
 ### 1. Slide-Level Diffing
 
 **Matching Algorithm:**
+
 - Primary: Match slides by title (using `extractSlideTitle` utility)
 - Secondary: Match by position if titles don't align
 - Detect reordering by tracking index changes
 - Handle edge cases: duplicate titles, untitled slides
 
 **Detection Logic:**
+
 - **Added**: Slide exists in after but not before
 - **Removed**: Slide exists in before but not after
 - **Modified**: Slide exists in both with different content
@@ -109,6 +114,7 @@ interface DiffSummary {
 ### 2. Book-Style Layout
 
 **Visual Structure:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Diff Summary Header: "5 of 12 slides changed" [Filter: ☑ ] │
@@ -128,6 +134,7 @@ interface DiffSummary {
 ```
 
 **Layout Implementation:**
+
 - Reuse `AnimatedResizableLayout` from `SlidePresentationBook`
 - Resizable divider with 50/50 default split
 - Collapse/expand functionality for focusing on one side
@@ -136,6 +143,7 @@ interface DiffSummary {
 ### 3. Diff Visualization
 
 **Color Coding:**
+
 - 🟢 Green: Added slides/content
 - 🔴 Red: Removed slides/content
 - 🟡 Yellow: Modified slides
@@ -143,12 +151,14 @@ interface DiffSummary {
 - 🔵 Blue: Moved slides (optional indicator)
 
 **Content-Level Highlighting:**
+
 - Use `diff` library (or similar) for text-level comparison
 - Inline highlighting within slide content
 - Line-by-line diff display option
 - Preserve markdown rendering while showing changes
 
 **Empty Page Placeholders:**
+
 - When slide is added: show empty/placeholder on left side
 - When slide is removed: show empty/placeholder on right side
 - Visual indicator: "Slide Added" / "Slide Removed" message
@@ -156,11 +166,13 @@ interface DiffSummary {
 ### 4. Diff-Only Filter Mode
 
 **Filter Toggle:**
+
 - Checkbox/switch in header: "Show only changed slides"
 - When enabled, navigation skips unchanged slides
 - Update page counter: "Changed slide 2 of 5" vs "Slide 3 of 12"
 
 **Navigation Behavior:**
+
 - "Next/Prev Changed" buttons
 - Keyboard shortcuts (arrow keys)
 - TOC highlighting shows only changed slides when filtered
@@ -169,6 +181,7 @@ interface DiffSummary {
 ### 5. Table of Contents Integration
 
 **Enhanced TOC:**
+
 - Show all slides with diff status indicators
 - Color-coded entries matching diff status
 - Filter TOC items when "show only changed" is active
@@ -178,12 +191,14 @@ interface DiffSummary {
 ### 6. Diff Summary Panel
 
 **Header Information:**
+
 ```
 Summary: 5 slides changed (2 added, 1 removed, 2 modified)
 Showing: Slides 3-4 of 12 total
 ```
 
 **Optional Detailed View:**
+
 - Expandable summary showing all changes
 - List of modified slide titles
 - Quick jump to specific changes
@@ -193,6 +208,7 @@ Showing: Slides 3-4 of 12 total
 ### File Structure
 
 **Phase 1: `@a24z/markdown-utils` Package**
+
 ```
 packages/markdown-utils/
 └── src/
@@ -208,6 +224,7 @@ packages/markdown-utils/
 ```
 
 **Phase 2: `themed-markdown` Package**
+
 ```
 industryMarkdown/
 ├── components/
@@ -224,12 +241,14 @@ industryMarkdown/
 ### Dependencies
 
 **Phase 1 - `@a24z/markdown-utils`:**
+
 - No new dependencies (uses existing presentation types)
 - Optional: `diff` library for text comparison (https://www.npmjs.com/package/diff)
   - Or implement simple text diff algorithm inline
   - Or `fast-diff` for better performance
 
 **Phase 2 - `themed-markdown`:**
+
 - `@a24z/markdown-utils@^0.1.3` - Updated with diff utilities
 - `@a24z/industry-theme` - Theming
 - `@a24z/panels` - Layout components
@@ -244,34 +263,25 @@ industryMarkdown/
 // packages/markdown-utils/src/diff/diffPresentations.ts
 export function diffPresentations(
   before: MarkdownPresentation,
-  after: MarkdownPresentation
-): PresentationDiff
+  after: MarkdownPresentation,
+): PresentationDiff;
 
 // packages/markdown-utils/src/diff/diffSummary.ts
-export function calculateDiffSummary(diff: PresentationDiff): DiffSummary
+export function calculateDiffSummary(diff: PresentationDiff): DiffSummary;
 
 // packages/markdown-utils/src/diff/textDiff.ts
-export function diffText(
-  beforeContent: string,
-  afterContent: string
-): TextDiff[]
+export function diffText(beforeContent: string, afterContent: string): TextDiff[];
 ```
 
 **Internal Helper Functions:**
 
 ```typescript
 // packages/markdown-utils/src/diff/matchSlides.ts
-function matchSlides(
-  beforeSlides: MarkdownSlide[],
-  afterSlides: MarkdownSlide[]
-): SlideMatch[]
+function matchSlides(beforeSlides: MarkdownSlide[], afterSlides: MarkdownSlide[]): SlideMatch[];
 
-function slidesAreEqual(
-  slide1: MarkdownSlide,
-  slide2: MarkdownSlide
-): boolean
+function slidesAreEqual(slide1: MarkdownSlide, slide2: MarkdownSlide): boolean;
 
-function normalizeSlideContent(slide: MarkdownSlide): string
+function normalizeSlideContent(slide: MarkdownSlide): string;
 ```
 
 **Type Definitions:**
@@ -317,6 +327,7 @@ export interface DiffSummary {
 ### Component Structure (Phase 2: React Components)
 
 **`SlidePresentationDiff.tsx`**:
+
 ```typescript
 import { diffPresentations, PresentationDiff } from '@a24z/markdown-utils';
 
@@ -381,26 +392,20 @@ export function SlidePresentationDiff(props: SlidePresentationDiffProps) {
 ```
 
 **`useSlideDiff.ts` Hook (Optional):**
+
 ```typescript
 import { diffPresentations, PresentationDiff } from '@a24z/markdown-utils';
 
-export function useSlideDiff(
-  before: MarkdownPresentation,
-  after: MarkdownPresentation
-) {
-  const diff = useMemo(
-    () => diffPresentations(before, after),
-    [before, after]
-  );
+export function useSlideDiff(before: MarkdownPresentation, after: MarkdownPresentation) {
+  const diff = useMemo(() => diffPresentations(before, after), [before, after]);
 
   const [showOnlyChanged, setShowOnlyChanged] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const visibleDiffs = useMemo(
-    () => showOnlyChanged
-      ? diff.slideDiffs.filter(d => d.status !== 'unchanged')
-      : diff.slideDiffs,
-    [diff.slideDiffs, showOnlyChanged]
+    () =>
+      showOnlyChanged ? diff.slideDiffs.filter(d => d.status !== 'unchanged') : diff.slideDiffs,
+    [diff.slideDiffs, showOnlyChanged],
   );
 
   return {
@@ -444,6 +449,7 @@ export function useSlideDiff(
 ### Phase 1: Unit Tests (`@a24z/markdown-utils`)
 
 **`diffPresentations.test.ts`:**
+
 - Basic diff: simple before/after with modifications
 - Edge cases: empty presentations, single slide
 - Slide matching with duplicate titles
@@ -453,6 +459,7 @@ export function useSlideDiff(
 - All slides changed
 
 **`matchSlides.test.ts`:**
+
 - Match by title (exact match)
 - Match by position when titles don't align
 - Handle duplicate titles
@@ -460,6 +467,7 @@ export function useSlideDiff(
 - Empty slide arrays
 
 **`textDiff.test.ts`:**
+
 - Simple text additions
 - Simple text deletions
 - Mixed additions and deletions
@@ -467,6 +475,7 @@ export function useSlideDiff(
 - Multi-line changes
 
 **`diffSummary.test.ts`:**
+
 - Accurate counts for all diff statuses
 - Summary with no changes
 - Summary with all changes
@@ -483,6 +492,7 @@ export function useSlideDiff(
 ### Storybook Stories
 
 Create stories for:
+
 1. **Basic diff**: Simple before/after with a few changes
 2. **Only additions**: All new slides
 3. **Only deletions**: Slides removed
@@ -494,6 +504,7 @@ Create stories for:
 ## Future Enhancements
 
 ### Phase 2 (Optional)
+
 - Export diff as markdown report
 - Syntax-aware diff for code blocks
 - Image diff comparison
@@ -505,6 +516,7 @@ Create stories for:
 - Batch/bulk review mode
 
 ### Phase 3 (Optional)
+
 - Collaborative review features
 - Approval workflow
 - Change request comments
@@ -529,6 +541,7 @@ The component will be considered complete when:
 ## Timeline Estimate
 
 ### Phase 1: `@a24z/markdown-utils` (Core Logic)
+
 - **Type definitions** (types/diff.ts): 30 mins - 1 hour
 - **Text diff utilities** (textDiff.ts): 1-2 hours
 - **Slide matching logic** (matchSlides.ts): 2-3 hours
@@ -540,6 +553,7 @@ The component will be considered complete when:
 **Phase 1 Total**: ~9-14 hours
 
 ### Phase 2: `themed-markdown` (React UI)
+
 - **Core Component** (SlidePresentationDiff.tsx): 3-4 hours
 - **Diff Rendering** (DiffSlideRenderer.tsx): 2-3 hours
 - **Summary Header** (DiffSummaryHeader.tsx): 1-2 hours
@@ -555,6 +569,7 @@ The component will be considered complete when:
 ### Overall Total: ~22-35 hours of focused development
 
 **Recommended Approach:**
+
 - Complete Phase 1 first, publish new version of `@a24z/markdown-utils`
 - Then implement Phase 2 using the published utilities
 - This allows for independent testing and validation of core logic
@@ -570,11 +585,13 @@ The component will be considered complete when:
 ## Development Workflow
 
 ### Step 1: Setup `@a24z/markdown-utils` Development
+
 1. Navigate to the `markdown-utils` package directory
 2. Create feature branch for diff implementation
 3. Set up local development with `bun link` for testing
 
 ### Step 2: Implement Phase 1 (Core Logic)
+
 1. Create type definitions in `src/types/diff.ts`
 2. Implement text diffing in `src/diff/textDiff.ts`
 3. Implement slide matching in `src/diff/matchSlides.ts`
@@ -585,12 +602,14 @@ The component will be considered complete when:
 8. Write comprehensive unit tests
 
 ### Step 3: Publish New Version
+
 1. Run tests: `bun test`
 2. Build package: `bun run build`
 3. Update version to `0.1.3` in `package.json`
 4. Publish to npm: `npm publish`
 
 ### Step 4: Implement Phase 2 (React UI)
+
 1. Update `themed-markdown` to use `@a24z/markdown-utils@^0.1.3`
 2. Create React components
 3. Build Storybook stories
@@ -600,15 +619,18 @@ The component will be considered complete when:
 ## References
 
 **Existing Code:**
+
 - Book mode layout: `industryMarkdown/components/SlidePresentationBook.tsx`
 - Slide utilities: `industryMarkdown/utils/presentationUtils.ts`
 - Type definitions: `industryMarkdown/types/presentation.ts`
 - Markdown utils package: `packages/markdown-utils/`
 
 **External Libraries:**
+
 - Text diff algorithm: https://www.npmjs.com/package/diff
 - Alternative: https://www.npmjs.com/package/fast-diff
 
 **Documentation:**
+
 - `@a24z/markdown-utils` README for API patterns
 - Existing Storybook stories for component examples

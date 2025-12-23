@@ -1,4 +1,9 @@
-import { ThemeProvider, terminalTheme, regalTheme, glassmorphismTheme } from '@principal-ade/industry-theme';
+import {
+  ThemeProvider,
+  terminalTheme,
+  regalTheme,
+  glassmorphismTheme,
+} from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 

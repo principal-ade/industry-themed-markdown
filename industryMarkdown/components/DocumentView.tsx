@@ -1,5 +1,9 @@
 import { Theme } from '@principal-ade/industry-theme';
-import { BashCommandOptions, BashCommandResult, RepositoryInfo } from '@principal-ade/markdown-utils';
+import {
+  BashCommandOptions,
+  BashCommandResult,
+  RepositoryInfo,
+} from '@principal-ade/markdown-utils';
 import React, { useRef, useCallback } from 'react';
 
 import { IndustryMarkdownSlide } from './IndustryMarkdownSlide';
@@ -230,16 +234,16 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
             <IndustryMarkdownSlide
               content={slideContent}
               slideIdPrefix={`${slideIdPrefix}-${index}`}
-                slideIndex={index}
-                isVisible={true}
-                theme={theme}
-                onCheckboxChange={onCheckboxChange}
-                enableHtmlPopout={enableHtmlPopout}
-                enableKeyboardScrolling={enableKeyboardScrolling}
-                autoFocusOnVisible={autoFocusOnVisible}
-                onLinkClick={onLinkClick}
-                handleRunBashCommand={handleRunBashCommand}
-                fontSizeScale={fontSizeScale}
+              slideIndex={index}
+              isVisible={true}
+              theme={theme}
+              onCheckboxChange={onCheckboxChange}
+              enableHtmlPopout={enableHtmlPopout}
+              enableKeyboardScrolling={enableKeyboardScrolling}
+              autoFocusOnVisible={autoFocusOnVisible}
+              onLinkClick={onLinkClick}
+              handleRunBashCommand={handleRunBashCommand}
+              fontSizeScale={fontSizeScale}
               handlePromptCopy={handlePromptCopy}
               repositoryInfo={repositoryInfo}
               transparentBackground={transparentBackground}

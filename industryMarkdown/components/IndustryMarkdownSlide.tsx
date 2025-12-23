@@ -60,7 +60,11 @@
  */
 
 import { Theme, theme as defaultTheme } from '@principal-ade/industry-theme';
-import { BashCommandOptions, BashCommandResult, RepositoryInfo } from '@principal-ade/markdown-utils';
+import {
+  BashCommandOptions,
+  BashCommandResult,
+  RepositoryInfo,
+} from '@principal-ade/markdown-utils';
 import { defaultSchema } from 'hast-util-sanitize';
 import React, { useRef, useEffect, useLayoutEffect, useState, useMemo, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';

@@ -1,4 +1,9 @@
-import { ThemeProvider, useTheme, theme as defaultTheme, addMode } from '@principal-ade/industry-theme';
+import {
+  ThemeProvider,
+  useTheme,
+  theme as defaultTheme,
+  addMode,
+} from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 

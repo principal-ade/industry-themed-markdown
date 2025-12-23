@@ -92,9 +92,10 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
 
   // Smart default: sidebar for single view, overlay for book view
   // But force overlay on mobile in single mode
-  const effectiveTocDisplayMode = isMobile && viewMode === 'single'
-    ? 'overlay'
-    : (tocDisplayMode ?? (viewMode === 'single' ? 'sidebar' : 'overlay'));
+  const effectiveTocDisplayMode =
+    isMobile && viewMode === 'single'
+      ? 'overlay'
+      : (tocDisplayMode ?? (viewMode === 'single' ? 'sidebar' : 'overlay'));
   // Default to closed for both sidebar and overlay modes
   const defaultTocOpen = initialTocOpen ?? false;
   // Ensure initial slide is even in book mode for proper page pairing
@@ -529,7 +530,9 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                             }
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: theme.space[2] }}>
+                          <div
+                            style={{ display: 'flex', alignItems: 'center', gap: theme.space[2] }}
+                          >
                             <span
                               style={{
                                 display: 'inline-block',
@@ -694,7 +697,9 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                             }
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: theme.space[2] }}>
+                          <div
+                            style={{ display: 'flex', alignItems: 'center', gap: theme.space[2] }}
+                          >
                             <span
                               style={{
                                 display: 'inline-block',
@@ -784,217 +789,358 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
         ) : (
           // Book mode OR Overlay mode - use original TOC overlay
           <>
-        {/* Table of Contents Sidebar (Overlay Mode) */}
-        {effectiveTocDisplayMode === 'overlay' && (
-          <div
-            style={{
-              position: 'absolute',
-              ...(isMobile
-                ? {
-                    // Mobile: slide up from bottom
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    width: '100%',
-                    maxHeight: '70vh',
-                    borderTop: `1px solid ${theme.colors.border}`,
-                    borderRadius: `${theme.radii[2]}px ${theme.radii[2]}px 0 0`,
-                    transform: showTOC ? 'translateY(0)' : 'translateY(100%)',
-                  }
-                : {
-                    // Desktop: slide in from left
-                    top: 0,
-                    left: 0,
-                    bottom: 0,
-                    width: '300px',
-                    borderRight: `1px solid ${theme.colors.border}`,
-                    transform: showTOC ? 'translateX(0)' : 'translateX(-100%)',
-                  }),
-              backgroundColor: theme.colors.backgroundSecondary,
-              transition: 'transform 0.3s ease',
-              zIndex: 10,
-              overflowY: 'auto',
-              overflowX: 'hidden',
-            }}
-          >
-          {/* TOC Header */}
-          <div
-            style={{
-              padding: theme.space[3],
-              borderBottom: `1px solid ${theme.colors.border}`,
-              backgroundColor: theme.colors.background,
-              position: 'sticky',
-              top: 0,
-              zIndex: 1,
-            }}
-          >
-            <h3
-              style={{
-                margin: 0,
-                fontSize: theme.fontSizes[3],
-                fontFamily: theme.fonts.heading,
-                color: theme.colors.text,
-                fontWeight: 600,
-              }}
-            >
-              Table of Contents
-            </h3>
-            <p
-              style={{
-                margin: `${theme.space[1]}px 0 0 0`,
-                fontSize: theme.fontSizes[0],
-                color: theme.colors.textSecondary,
-                fontFamily: theme.fonts.body,
-              }}
-            >
-              {slides.length} {slides.length === 1 ? 'slide' : 'slides'}
-            </p>
-          </div>
-
-          {/* TOC Items */}
-          <div style={{ padding: theme.space[2] }}>
-            {slideTitles.map((title, index) => {
-              const isCurrentPage =
-                viewMode === 'book'
-                  ? index === leftSlideIndex || index === rightSlideIndex
-                  : index === currentSlide;
-
-              return (
-                <button
-                  key={index}
-                  onClick={() => navigateToSlide(index)}
+            {/* Table of Contents Sidebar (Overlay Mode) */}
+            {effectiveTocDisplayMode === 'overlay' && (
+              <div
+                style={{
+                  position: 'absolute',
+                  ...(isMobile
+                    ? {
+                        // Mobile: slide up from bottom
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        width: '100%',
+                        maxHeight: '70vh',
+                        borderTop: `1px solid ${theme.colors.border}`,
+                        borderRadius: `${theme.radii[2]}px ${theme.radii[2]}px 0 0`,
+                        transform: showTOC ? 'translateY(0)' : 'translateY(100%)',
+                      }
+                    : {
+                        // Desktop: slide in from left
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        width: '300px',
+                        borderRight: `1px solid ${theme.colors.border}`,
+                        transform: showTOC ? 'translateX(0)' : 'translateX(-100%)',
+                      }),
+                  backgroundColor: theme.colors.backgroundSecondary,
+                  transition: 'transform 0.3s ease',
+                  zIndex: 10,
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                }}
+              >
+                {/* TOC Header */}
+                <div
                   style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: `${theme.space[2]}px ${theme.space[3]}px`,
-                    marginBottom: theme.space[1],
-                    backgroundColor: isCurrentPage ? theme.colors.primary : 'transparent',
-                    border: 'none',
-                    borderRadius: theme.radii[1],
-                    color: isCurrentPage ? theme.colors.background : theme.colors.text,
-                    fontSize: theme.fontSizes[1],
-                    fontFamily: theme.fonts.body,
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    position: 'relative',
-                  }}
-                  onMouseOver={e => {
-                    if (!isCurrentPage) {
-                      e.currentTarget.style.backgroundColor = theme.colors.backgroundHover;
-                    }
-                  }}
-                  onMouseOut={e => {
-                    if (!isCurrentPage) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }
+                    padding: theme.space[3],
+                    borderBottom: `1px solid ${theme.colors.border}`,
+                    backgroundColor: theme.colors.background,
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 1,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.space[2] }}>
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        minWidth: '24px',
-                        fontSize: theme.fontSizes[0],
-                        fontFamily: theme.fonts.monospace,
-                        opacity: 0.6,
-                      }}
-                    >
-                      {index + 1}.
-                    </span>
-                    <span
-                      style={{
-                        flex: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {title}
-                    </span>
-                  </div>
-                  {isCurrentPage && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: '3px',
-                        height: '60%',
-                        backgroundColor: isCurrentPage
-                          ? theme.colors.background
-                          : theme.colors.primary,
-                        borderRadius: '0 2px 2px 0',
-                      }}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        )}
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: theme.fontSizes[3],
+                      fontFamily: theme.fonts.heading,
+                      color: theme.colors.text,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Table of Contents
+                  </h3>
+                  <p
+                    style={{
+                      margin: `${theme.space[1]}px 0 0 0`,
+                      fontSize: theme.fontSizes[0],
+                      color: theme.colors.textSecondary,
+                      fontFamily: theme.fonts.body,
+                    }}
+                  >
+                    {slides.length} {slides.length === 1 ? 'slide' : 'slides'}
+                  </p>
+                </div>
 
-        {/* Overlay to close TOC when clicking outside (Overlay Mode Only) */}
-        {effectiveTocDisplayMode === 'overlay' && showTOC && (
-          <div
-            onClick={() => setShowTOC(false)}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-              zIndex: 9,
-              cursor: 'pointer',
-            }}
-          />
-        )}
+                {/* TOC Items */}
+                <div style={{ padding: theme.space[2] }}>
+                  {slideTitles.map((title, index) => {
+                    const isCurrentPage =
+                      viewMode === 'book'
+                        ? index === leftSlideIndex || index === rightSlideIndex
+                        : index === currentSlide;
 
-        {/* Slide Content - Book or Single View */}
-        <div
-          style={{
-            flex: 1,
-            position: 'relative',
-            display: 'flex',
-            gap: 0,
-            padding: 0,
-            backgroundColor: theme.colors.background,
-            width: '100%',
-          }}
-        >
-          {slides.length > 0 ? (
-            viewMode === 'book' && slides.length > 1 ? (
-              // Book Mode with AnimatedResizableLayout (only when we have more than 1 slide)
-              <AnimatedResizableLayout
-                key={`${lastInteractedSide}-${collapsedSide}`} // Force re-mount when collapse state changes
-                collapsed={collapsedSide !== null}
-                collapsibleSide={lastInteractedSide}
-                leftPanel={
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => navigateToSlide(index)}
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          padding: `${theme.space[2]}px ${theme.space[3]}px`,
+                          marginBottom: theme.space[1],
+                          backgroundColor: isCurrentPage ? theme.colors.primary : 'transparent',
+                          border: 'none',
+                          borderRadius: theme.radii[1],
+                          color: isCurrentPage ? theme.colors.background : theme.colors.text,
+                          fontSize: theme.fontSizes[1],
+                          fontFamily: theme.fonts.body,
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          position: 'relative',
+                        }}
+                        onMouseOver={e => {
+                          if (!isCurrentPage) {
+                            e.currentTarget.style.backgroundColor = theme.colors.backgroundHover;
+                          }
+                        }}
+                        onMouseOut={e => {
+                          if (!isCurrentPage) {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: theme.space[2] }}>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              minWidth: '24px',
+                              fontSize: theme.fontSizes[0],
+                              fontFamily: theme.fonts.monospace,
+                              opacity: 0.6,
+                            }}
+                          >
+                            {index + 1}.
+                          </span>
+                          <span
+                            style={{
+                              flex: 1,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {title}
+                          </span>
+                        </div>
+                        {isCurrentPage && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: 0,
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              width: '3px',
+                              height: '60%',
+                              backgroundColor: isCurrentPage
+                                ? theme.colors.background
+                                : theme.colors.primary,
+                              borderRadius: '0 2px 2px 0',
+                            }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Overlay to close TOC when clicking outside (Overlay Mode Only) */}
+            {effectiveTocDisplayMode === 'overlay' && showTOC && (
+              <div
+                onClick={() => setShowTOC(false)}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  zIndex: 9,
+                  cursor: 'pointer',
+                }}
+              />
+            )}
+
+            {/* Slide Content - Book or Single View */}
+            <div
+              style={{
+                flex: 1,
+                position: 'relative',
+                display: 'flex',
+                gap: 0,
+                padding: 0,
+                backgroundColor: theme.colors.background,
+                width: '100%',
+              }}
+            >
+              {slides.length > 0 ? (
+                viewMode === 'book' && slides.length > 1 ? (
+                  // Book Mode with AnimatedResizableLayout (only when we have more than 1 slide)
+                  <AnimatedResizableLayout
+                    key={`${lastInteractedSide}-${collapsedSide}`} // Force re-mount when collapse state changes
+                    collapsed={collapsedSide !== null}
+                    collapsibleSide={lastInteractedSide}
+                    leftPanel={
+                      <div
+                        style={{
+                          height: '100%',
+                          width: '100%',
+                          position: 'relative',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: '100%',
+                            width: '100%',
+                            backgroundColor: 'transparent',
+                            borderRadius: 0,
+                            boxShadow: 'none',
+                            overflowY: 'auto',
+                            overflowX: 'auto',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                          }}
+                        >
+                          <IndustryMarkdownSlide
+                            content={slides[leftSlideIndex] || ''}
+                            slideIdPrefix={`${slideIdPrefix}-${leftSlideIndex}`}
+                            slideIndex={leftSlideIndex}
+                            isVisible={true}
+                            theme={theme}
+                            onCheckboxChange={onCheckboxChange}
+                            enableHtmlPopout={enableHtmlPopout}
+                            enableKeyboardScrolling={enableKeyboardScrolling}
+                            autoFocusOnVisible={autoFocusOnVisible}
+                            onLinkClick={onLinkClick}
+                            handleRunBashCommand={handleRunBashCommand}
+                            handlePromptCopy={handlePromptCopy}
+                            fontSizeScale={fontSizeScale}
+                            searchQuery={showSearch ? searchQuery : undefined}
+                            transparentBackground={true}
+                            additionalPadding={{
+                              left: `${theme.space[4]}px`,
+                              right: `${theme.space[2]}px`,
+                              top: `${theme.space[3]}px`,
+                            }}
+                            disableScroll={false}
+                          />
+                        </div>
+                      </div>
+                    }
+                    rightPanel={
+                      rightSlideIndex < slides.length ? (
+                        <div
+                          style={{
+                            height: '100%',
+                            width: '100%',
+                            position: 'relative',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: '100%',
+                              width: '100%',
+                              backgroundColor: 'transparent',
+                              borderRadius: 0,
+                              boxShadow: 'none',
+                              overflowY: 'auto',
+                              overflowX: 'auto',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                            }}
+                          >
+                            <IndustryMarkdownSlide
+                              content={slides[rightSlideIndex] || ''}
+                              slideIdPrefix={`${slideIdPrefix}-${rightSlideIndex}`}
+                              slideIndex={rightSlideIndex}
+                              isVisible={true}
+                              theme={theme}
+                              onCheckboxChange={onCheckboxChange}
+                              enableHtmlPopout={enableHtmlPopout}
+                              enableKeyboardScrolling={enableKeyboardScrolling}
+                              autoFocusOnVisible={autoFocusOnVisible}
+                              onLinkClick={onLinkClick}
+                              handleRunBashCommand={handleRunBashCommand}
+                              handlePromptCopy={handlePromptCopy}
+                              fontSizeScale={fontSizeScale}
+                              searchQuery={showSearch ? searchQuery : undefined}
+                              transparentBackground={true}
+                              additionalPadding={{
+                                left: `${theme.space[2]}px`,
+                                right: `${theme.space[4]}px`,
+                                top: `${theme.space[3]}px`,
+                              }}
+                              disableScroll={false}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        // Empty right page for odd number of slides
+                        <div
+                          style={{
+                            height: '100%',
+                            backgroundColor: theme.colors.background,
+                            borderRadius: 0,
+                            boxShadow: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: theme.colors.textSecondary || theme.colors.muted,
+                            fontSize: theme.fontSizes[1],
+                            fontFamily: theme.fonts.body,
+                            fontStyle: 'italic',
+                            padding: `0 ${theme.space[4]}px 0 ${theme.space[2]}px`,
+                          }}
+                        >
+                          End of presentation
+                        </div>
+                      )
+                    }
+                    defaultSize={50}
+                    minSize={30}
+                    showCollapseButton={false}
+                    theme={theme}
+                  />
+                ) : (
+                  // Single Page View (or Book Mode with only 1 slide)
                   <div
                     style={{
-                      height: '100%',
-                      width: '100%',
+                      flex: '1 1 0%',
+                      backgroundColor: 'transparent',
+                      borderRadius: 0,
+                      boxShadow: 'none',
+                      overflowY: 'auto',
+                      overflowX: 'hidden',
                       position: 'relative',
-                      overflow: 'hidden',
+                      width: '100%',
+                      // Center the single slide in book mode
+                      ...(viewMode === 'book' && slides.length === 1
+                        ? {
+                            display: 'flex',
+                            justifyContent: 'center',
+                          }
+                        : {}),
                     }}
                   >
                     <div
                       style={{
-                        height: '100%',
-                        width: '100%',
-                        backgroundColor: 'transparent',
-                        borderRadius: 0,
-                        boxShadow: 'none',
-                        overflowY: 'auto',
-                        overflowX: 'auto',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
+                        // In book mode with 1 slide, constrain width to look like a single page
+                        ...(viewMode === 'book' && slides.length === 1
+                          ? {
+                              width: '50%',
+                              maxWidth: '800px',
+                              minWidth: '400px',
+                              height: '100%',
+                            }
+                          : {
+                              width: '100%',
+                              height: '100%',
+                            }),
                       }}
                     >
                       <IndustryMarkdownSlide
@@ -1012,204 +1158,63 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                         handlePromptCopy={handlePromptCopy}
                         fontSizeScale={fontSizeScale}
                         searchQuery={showSearch ? searchQuery : undefined}
-                        transparentBackground={true}
-                        additionalPadding={{
-                          left: `${theme.space[4]}px`,
-                          right: `${theme.space[2]}px`,
-                          top: `${theme.space[3]}px`,
-                        }}
+                        transparentBackground={false}
                         disableScroll={false}
                       />
                     </div>
                   </div>
-                }
-                rightPanel={
-                  rightSlideIndex < slides.length ? (
-                    <div
-                      style={{
-                        height: '100%',
-                        width: '100%',
-                        position: 'relative',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: '100%',
-                          width: '100%',
-                          backgroundColor: 'transparent',
-                          borderRadius: 0,
-                          boxShadow: 'none',
-                          overflowY: 'auto',
-                          overflowX: 'auto',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                        }}
-                      >
-                        <IndustryMarkdownSlide
-                          content={slides[rightSlideIndex] || ''}
-                          slideIdPrefix={`${slideIdPrefix}-${rightSlideIndex}`}
-                          slideIndex={rightSlideIndex}
-                          isVisible={true}
-                          theme={theme}
-                          onCheckboxChange={onCheckboxChange}
-                          enableHtmlPopout={enableHtmlPopout}
-                          enableKeyboardScrolling={enableKeyboardScrolling}
-                          autoFocusOnVisible={autoFocusOnVisible}
-                          onLinkClick={onLinkClick}
-                          handleRunBashCommand={handleRunBashCommand}
-                          handlePromptCopy={handlePromptCopy}
-                          fontSizeScale={fontSizeScale}
-                          searchQuery={showSearch ? searchQuery : undefined}
-                          transparentBackground={true}
-                          additionalPadding={{
-                            left: `${theme.space[2]}px`,
-                            right: `${theme.space[4]}px`,
-                            top: `${theme.space[3]}px`,
-                          }}
-                          disableScroll={false}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    // Empty right page for odd number of slides
-                    <div
-                      style={{
-                        height: '100%',
-                        backgroundColor: theme.colors.background,
-                        borderRadius: 0,
-                        boxShadow: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: theme.colors.textSecondary || theme.colors.muted,
-                        fontSize: theme.fontSizes[1],
-                        fontFamily: theme.fonts.body,
-                        fontStyle: 'italic',
-                        padding: `0 ${theme.space[4]}px 0 ${theme.space[2]}px`,
-                      }}
-                    >
-                      End of presentation
-                    </div>
-                  )
-                }
-                defaultSize={50}
-                minSize={30}
-                showCollapseButton={false}
-                theme={theme}
-              />
-            ) : (
-              // Single Page View (or Book Mode with only 1 slide)
-              <div
-                style={{
-                  flex: '1 1 0%',
-                  backgroundColor: 'transparent',
-                  borderRadius: 0,
-                  boxShadow: 'none',
-                  overflowY: 'auto',
-                  overflowX: 'hidden',
-                  position: 'relative',
-                  width: '100%',
-                  // Center the single slide in book mode
-                  ...(viewMode === 'book' && slides.length === 1
-                    ? {
-                        display: 'flex',
-                        justifyContent: 'center',
-                      }
-                    : {}),
-                }}
-              >
+                )
+              ) : (
                 <div
                   style={{
-                    // In book mode with 1 slide, constrain width to look like a single page
-                    ...(viewMode === 'book' && slides.length === 1
-                      ? {
-                          width: '50%',
-                          maxWidth: '800px',
-                          minWidth: '400px',
-                          height: '100%',
-                        }
-                      : {
-                          width: '100%',
-                          height: '100%',
-                        }),
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: theme.colors.muted,
+                    fontSize: theme.fontSizes[2],
+                    fontFamily: theme.fonts.body,
                   }}
                 >
-                  <IndustryMarkdownSlide
-                    content={slides[leftSlideIndex] || ''}
-                    slideIdPrefix={`${slideIdPrefix}-${leftSlideIndex}`}
-                    slideIndex={leftSlideIndex}
-                    isVisible={true}
-                    theme={theme}
-                    onCheckboxChange={onCheckboxChange}
-                    enableHtmlPopout={enableHtmlPopout}
-                    enableKeyboardScrolling={enableKeyboardScrolling}
-                    autoFocusOnVisible={autoFocusOnVisible}
-                    onLinkClick={onLinkClick}
-                    handleRunBashCommand={handleRunBashCommand}
-                    handlePromptCopy={handlePromptCopy}
-                    fontSizeScale={fontSizeScale}
-                    searchQuery={showSearch ? searchQuery : undefined}
-                    transparentBackground={false}
-                    disableScroll={false}
-                  />
+                  No slides available
                 </div>
-              </div>
-            )
-          ) : (
-            <div
-              style={{
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: theme.colors.muted,
-                fontSize: theme.fontSizes[2],
-                fontFamily: theme.fonts.body,
-              }}
-            >
-              No slides available
-            </div>
-          )}
-        </div>
-
-        {/* Page numbers in the padding area (Book Mode with multiple slides only) */}
-        {viewMode === 'book' && slides.length > 1 && (
-          <>
-            {/* Left page number */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: theme.space[3],
-                left: theme.space[3],
-                fontSize: theme.fontSizes[0],
-                color: theme.colors.textSecondary,
-                fontFamily: theme.fonts.monospace,
-              }}
-            >
-              {leftSlideIndex + 1}
+              )}
             </div>
 
-            {/* Right page number */}
-            {rightSlideIndex < slides.length && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: theme.space[3],
-                  right: theme.space[3],
-                  fontSize: theme.fontSizes[0],
-                  color: theme.colors.textSecondary,
-                  fontFamily: theme.fonts.monospace,
-                }}
-              >
-                {rightSlideIndex + 1}
-              </div>
+            {/* Page numbers in the padding area (Book Mode with multiple slides only) */}
+            {viewMode === 'book' && slides.length > 1 && (
+              <>
+                {/* Left page number */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: theme.space[3],
+                    left: theme.space[3],
+                    fontSize: theme.fontSizes[0],
+                    color: theme.colors.textSecondary,
+                    fontFamily: theme.fonts.monospace,
+                  }}
+                >
+                  {leftSlideIndex + 1}
+                </div>
+
+                {/* Right page number */}
+                {rightSlideIndex < slides.length && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: theme.space[3],
+                      right: theme.space[3],
+                      fontSize: theme.fontSizes[0],
+                      color: theme.colors.textSecondary,
+                      fontFamily: theme.fonts.monospace,
+                    }}
+                  >
+                    {rightSlideIndex + 1}
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
           </>
         )}
       </div>

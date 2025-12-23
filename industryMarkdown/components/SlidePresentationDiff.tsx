@@ -1,5 +1,10 @@
 import { Theme } from '@principal-ade/industry-theme';
-import { diffPresentations, PresentationDiff, SlideDiff , MarkdownPresentation } from '@principal-ade/markdown-utils';
+import {
+  diffPresentations,
+  PresentationDiff,
+  SlideDiff,
+  MarkdownPresentation,
+} from '@principal-ade/markdown-utils';
 import { AnimatedResizableLayout } from '@principal-ade/panels';
 import React, { useMemo, useState } from 'react';
 
@@ -44,15 +49,16 @@ export function SlidePresentationDiff({
   // Compute diffs using markdown-utils
   const presentationDiff: PresentationDiff = useMemo(
     () => diffPresentations(beforePresentation, afterPresentation),
-    [beforePresentation, afterPresentation]
+    [beforePresentation, afterPresentation],
   );
 
   // Filter diffs if needed
   const visibleDiffs: SlideDiff[] = useMemo(
-    () => showOnlyChanged
-      ? presentationDiff.slideDiffs.filter(d => d.status !== 'unchanged')
-      : presentationDiff.slideDiffs,
-    [presentationDiff.slideDiffs, showOnlyChanged]
+    () =>
+      showOnlyChanged
+        ? presentationDiff.slideDiffs.filter(d => d.status !== 'unchanged')
+        : presentationDiff.slideDiffs,
+    [presentationDiff.slideDiffs, showOnlyChanged],
   );
 
   // Get current diff
@@ -94,11 +100,13 @@ export function SlidePresentationDiff({
 
   if (!currentDiff) {
     return (
-      <div style={{
-        padding: '2rem',
-        textAlign: 'center',
-        color: theme?.colors?.text || '#333'
-      }}>
+      <div
+        style={{
+          padding: '2rem',
+          textAlign: 'center',
+          color: theme?.colors?.text || '#333',
+        }}
+      >
         No slides to display
       </div>
     );
@@ -106,64 +114,81 @@ export function SlidePresentationDiff({
 
   const getStatusColor = (status: SlideDiff['status']) => {
     switch (status) {
-      case 'added': return '#22c55e'; // green
-      case 'removed': return '#ef4444'; // red
-      case 'modified': return '#f59e0b'; // yellow/orange
-      case 'moved': return '#3b82f6'; // blue
-      default: return '#6b7280'; // gray
+      case 'added':
+        return '#22c55e'; // green
+      case 'removed':
+        return '#ef4444'; // red
+      case 'modified':
+        return '#f59e0b'; // yellow/orange
+      case 'moved':
+        return '#3b82f6'; // blue
+      default:
+        return '#6b7280'; // gray
     }
   };
 
   const getStatusLabel = (status: SlideDiff['status']) => {
     switch (status) {
-      case 'added': return 'Added';
-      case 'removed': return 'Removed';
-      case 'modified': return 'Modified';
-      case 'moved': return 'Moved';
-      default: return 'Unchanged';
+      case 'added':
+        return 'Added';
+      case 'removed':
+        return 'Removed';
+      case 'modified':
+        return 'Modified';
+      case 'moved':
+        return 'Moved';
+      default:
+        return 'Unchanged';
     }
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      width: '100%',
-      backgroundColor: theme?.colors?.background || '#ffffff',
-      color: theme?.colors?.text || '#1f2937',
-    }}>
-      {/* Header with summary */}
-      <div style={{
-        padding: '1rem 2rem',
-        borderBottom: `1px solid ${theme?.colors?.border || '#e5e7eb'}`,
+    <div
+      style={{
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '1rem',
-        flexWrap: 'wrap',
-      }}>
+        flexDirection: 'column',
+        height: '100vh',
+        width: '100%',
+        backgroundColor: theme?.colors?.background || '#ffffff',
+        color: theme?.colors?.text || '#1f2937',
+      }}
+    >
+      {/* Header with summary */}
+      <div
+        style={{
+          padding: '1rem 2rem',
+          borderBottom: `1px solid ${theme?.colors?.border || '#e5e7eb'}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1rem',
+          flexWrap: 'wrap',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
-            Presentation Diff
-          </h2>
-          <div style={{
-            fontSize: '0.875rem',
-            color: theme?.colors?.textSecondary || '#6b7280',
-          }}>
+          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Presentation Diff</h2>
+          <div
+            style={{
+              fontSize: '0.875rem',
+              color: theme?.colors?.textSecondary || '#6b7280',
+            }}
+          >
             {presentationDiff.summary.added > 0 && (
               <span style={{ marginRight: '1rem' }}>
-                <strong style={{ color: '#22c55e' }}>+{presentationDiff.summary.added}</strong> added
+                <strong style={{ color: '#22c55e' }}>+{presentationDiff.summary.added}</strong>{' '}
+                added
               </span>
             )}
             {presentationDiff.summary.removed > 0 && (
               <span style={{ marginRight: '1rem' }}>
-                <strong style={{ color: '#ef4444' }}>-{presentationDiff.summary.removed}</strong> removed
+                <strong style={{ color: '#ef4444' }}>-{presentationDiff.summary.removed}</strong>{' '}
+                removed
               </span>
             )}
             {presentationDiff.summary.modified > 0 && (
               <span style={{ marginRight: '1rem' }}>
-                <strong style={{ color: '#f59e0b' }}>~{presentationDiff.summary.modified}</strong> modified
+                <strong style={{ color: '#f59e0b' }}>~{presentationDiff.summary.modified}</strong>{' '}
+                modified
               </span>
             )}
           </div>
@@ -173,7 +198,7 @@ export function SlidePresentationDiff({
           <input
             type="checkbox"
             checked={showOnlyChanged}
-            onChange={(e) => {
+            onChange={e => {
               setShowOnlyChanged(e.target.checked);
               setCurrentPairIndex(0);
             }}
@@ -184,30 +209,36 @@ export function SlidePresentationDiff({
       </div>
 
       {/* Current slide status indicator */}
-      <div style={{
-        padding: '0.75rem 2rem',
-        backgroundColor: theme?.colors?.surface || '#f9fafb',
-        borderBottom: `1px solid ${theme?.colors?.border || '#e5e7eb'}`,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
+      <div
+        style={{
+          padding: '0.75rem 2rem',
+          backgroundColor: theme?.colors?.surface || '#f9fafb',
+          borderBottom: `1px solid ${theme?.colors?.border || '#e5e7eb'}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div style={{
-            width: '12px',
-            height: '12px',
-            borderRadius: '50%',
-            backgroundColor: getStatusColor(currentDiff.status),
-          }} />
+          <div
+            style={{
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              backgroundColor: getStatusColor(currentDiff.status),
+            }}
+          />
           <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>
             {getStatusLabel(currentDiff.status)}
           </span>
           {currentDiff.titleChanged && (
-            <span style={{
-              fontSize: '0.75rem',
-              color: theme?.colors?.textSecondary || '#6b7280',
-              marginLeft: '0.5rem'
-            }}>
+            <span
+              style={{
+                fontSize: '0.75rem',
+                color: theme?.colors?.textSecondary || '#6b7280',
+                marginLeft: '0.5rem',
+              }}
+            >
               (title changed)
             </span>
           )}
@@ -223,24 +254,29 @@ export function SlidePresentationDiff({
         <AnimatedResizableLayout
           defaultSize={50}
           leftPanel={
-            <div style={{
-              height: '100%',
-              overflow: 'auto',
-              padding: '2rem',
-              backgroundColor: currentDiff.status === 'removed'
-                ? 'rgba(239, 68, 68, 0.05)'
-                : theme?.colors?.background || '#ffffff',
-            }}>
+            <div
+              style={{
+                height: '100%',
+                overflow: 'auto',
+                padding: '2rem',
+                backgroundColor:
+                  currentDiff.status === 'removed'
+                    ? 'rgba(239, 68, 68, 0.05)'
+                    : theme?.colors?.background || '#ffffff',
+              }}
+            >
               {currentDiff.beforeSlide ? (
                 <>
-                  <div style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    color: theme?.colors?.textSecondary || '#6b7280',
-                    marginBottom: '1rem',
-                    letterSpacing: '0.05em',
-                  }}>
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      color: theme?.colors?.textSecondary || '#6b7280',
+                      marginBottom: '1rem',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
                     Before
                   </div>
                   <IndustryMarkdownSlide
@@ -252,38 +288,45 @@ export function SlidePresentationDiff({
                   />
                 </>
               ) : (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '100%',
-                  color: theme?.colors?.textSecondary || '#9ca3af',
-                  fontSize: '0.875rem',
-                }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    color: theme?.colors?.textSecondary || '#9ca3af',
+                    fontSize: '0.875rem',
+                  }}
+                >
                   Slide added in new version
                 </div>
               )}
             </div>
           }
           rightPanel={
-            <div style={{
-              height: '100%',
-              overflow: 'auto',
-              padding: '2rem',
-              backgroundColor: currentDiff.status === 'added'
-                ? 'rgba(34, 197, 94, 0.05)'
-                : theme?.colors?.background || '#ffffff',
-            }}>
+            <div
+              style={{
+                height: '100%',
+                overflow: 'auto',
+                padding: '2rem',
+                backgroundColor:
+                  currentDiff.status === 'added'
+                    ? 'rgba(34, 197, 94, 0.05)'
+                    : theme?.colors?.background || '#ffffff',
+              }}
+            >
               {currentDiff.afterSlide ? (
                 <>
-                  <div style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    color: theme?.colors?.textSecondary || '#6b7280',
-                    marginBottom: '1rem',
-                    letterSpacing: '0.05em',
-                  }}>
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      color: theme?.colors?.textSecondary || '#6b7280',
+                      marginBottom: '1rem',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
                     After
                   </div>
                   <IndustryMarkdownSlide
@@ -295,14 +338,16 @@ export function SlidePresentationDiff({
                   />
                 </>
               ) : (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '100%',
-                  color: theme?.colors?.textSecondary || '#9ca3af',
-                  fontSize: '0.875rem',
-                }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    color: theme?.colors?.textSecondary || '#9ca3af',
+                    fontSize: '0.875rem',
+                  }}
+                >
                   Slide removed from new version
                 </div>
               )}
@@ -312,14 +357,16 @@ export function SlidePresentationDiff({
       </div>
 
       {/* Navigation controls */}
-      <div style={{
-        padding: '1rem 2rem',
-        borderTop: `1px solid ${theme?.colors?.border || '#e5e7eb'}`,
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '1rem',
-        backgroundColor: theme?.colors?.surface || '#f9fafb',
-      }}>
+      <div
+        style={{
+          padding: '1rem 2rem',
+          borderTop: `1px solid ${theme?.colors?.border || '#e5e7eb'}`,
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '1rem',
+          backgroundColor: theme?.colors?.surface || '#f9fafb',
+        }}
+      >
         <button
           onClick={goToPrev}
           disabled={currentPairIndex === 0}
@@ -357,13 +404,15 @@ export function SlidePresentationDiff({
       </div>
 
       {/* Keyboard shortcuts hint */}
-      <div style={{
-        padding: '0.5rem 2rem',
-        fontSize: '0.75rem',
-        color: theme?.colors?.textSecondary || '#9ca3af',
-        textAlign: 'center',
-        backgroundColor: theme?.colors?.surface || '#f9fafb',
-      }}>
+      <div
+        style={{
+          padding: '0.5rem 2rem',
+          fontSize: '0.75rem',
+          color: theme?.colors?.textSecondary || '#9ca3af',
+          textAlign: 'center',
+          backgroundColor: theme?.colors?.surface || '#f9fafb',
+        }}
+      >
         Use ← → arrow keys to navigate | Press F to toggle filter
       </div>
     </div>
