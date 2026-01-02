@@ -1,5 +1,5 @@
 import { Theme } from '@principal-ade/industry-theme';
-import { BashCommandOptions, BashCommandResult } from '@principal-ade/markdown-utils';
+import { BashCommandOptions, BashCommandResult, RepositoryInfo } from '@principal-ade/markdown-utils';
 import { AnimatedResizableLayout } from '@principal-ade/panels';
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 
@@ -49,6 +49,7 @@ export interface SlidePresentationBookProps {
   handlePromptCopy?: (filledPrompt: string) => void;
   fontSizeScale?: number;
   theme: Theme;
+  repositoryInfo?: RepositoryInfo;
 }
 
 export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
@@ -77,6 +78,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
   handlePromptCopy,
   fontSizeScale,
   theme,
+  repositoryInfo,
 }) => {
   // Detect if we're on a mobile device
   const [isMobile, setIsMobile] = useState(false);
@@ -595,6 +597,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                       handlePromptCopy={handlePromptCopy}
                       fontSizeScale={fontSizeScale}
                       searchQuery={showSearch ? searchQuery : undefined}
+                      repositoryInfo={repositoryInfo}
                     />
                   ) : (
                     <div
@@ -762,6 +765,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                       handlePromptCopy={handlePromptCopy}
                       fontSizeScale={fontSizeScale}
                       searchQuery={showSearch ? searchQuery : undefined}
+                      repositoryInfo={repositoryInfo}
                     />
                   ) : (
                     <div
@@ -1017,6 +1021,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                             handlePromptCopy={handlePromptCopy}
                             fontSizeScale={fontSizeScale}
                             searchQuery={showSearch ? searchQuery : undefined}
+                            repositoryInfo={repositoryInfo}
                             transparentBackground={true}
                             additionalPadding={{
                               left: `${theme.space[4]}px`,
@@ -1069,6 +1074,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                               handlePromptCopy={handlePromptCopy}
                               fontSizeScale={fontSizeScale}
                               searchQuery={showSearch ? searchQuery : undefined}
+                              repositoryInfo={repositoryInfo}
                               transparentBackground={true}
                               additionalPadding={{
                                 left: `${theme.space[2]}px`,
@@ -1158,6 +1164,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                         handlePromptCopy={handlePromptCopy}
                         fontSizeScale={fontSizeScale}
                         searchQuery={showSearch ? searchQuery : undefined}
+                        repositoryInfo={repositoryInfo}
                         transparentBackground={false}
                         disableScroll={false}
                       />

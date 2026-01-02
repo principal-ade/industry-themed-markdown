@@ -415,8 +415,7 @@ export const createIndustryMarkdownComponents = ({
                 style={{
                   flex: 1,
                   cursor: 'pointer',
-                  textDecoration: isChecked ? 'line-through' : 'none',
-                  opacity: isChecked ? 0.6 : 1,
+                  color: isChecked ? theme.colors.textMuted : 'inherit',
                   lineHeight: theme.lineHeights.relaxed, // More relaxed line height for readability
                 }}
               >
