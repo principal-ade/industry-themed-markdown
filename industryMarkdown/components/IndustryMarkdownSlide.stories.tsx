@@ -482,6 +482,142 @@ src/renderer/principal-window/
   },
 };
 
+export const ScrollingIssueTest: Story = {
+  name: 'Scrolling Issue Test',
+  decorators: [
+    Story => (
+      <ThemeProvider>
+        <div style={{ height: '300vh', width: '100%' }}>
+          {/* Content above the slide */}
+          <div
+            style={{
+              height: '100vh',
+              backgroundColor: '#f0f0f0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              borderBottom: '2px solid #ccc',
+            }}
+          >
+            <h1>Content Above the Slide</h1>
+            <p>Scroll down to see the IndustryMarkdownSlide component</p>
+            <p>If you see the slide immediately (without scrolling), the scroll issue is reproduced</p>
+          </div>
+
+          {/* The markdown slide */}
+          <div style={{ height: '100vh', width: '100%' }}>
+            <Story />
+          </div>
+
+          {/* Content below the slide */}
+          <div
+            style={{
+              height: '100vh',
+              backgroundColor: '#e0e0e0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              borderTop: '2px solid #ccc',
+            }}
+          >
+            <h1>Content Below the Slide</h1>
+            <p>This content should only be visible if you scroll down past the slide</p>
+          </div>
+        </div>
+      </ThemeProvider>
+    ),
+  ],
+  parameters: {
+    layout: 'fullscreen',
+  },
+  args: {
+    content: `# Scroll Issue Test
+
+This slide is used to test whether the page automatically scrolls to the IndustryMarkdownSlide when rendered.
+
+## Expected Behavior
+- Page should start at the top (showing "Content Above the Slide")
+- User should need to scroll down to see this slide
+
+## Potential Issue
+- If this slide is immediately visible on page load, the scroll issue is confirmed
+- The \`autoFocusOnVisible\` prop may be causing the browser to scroll to this element`,
+    slideIdPrefix: 'scroll-test',
+    slideIndex: 0,
+    isVisible: true,
+  },
+};
+
+export const ScrollingIssueTestWithAutoFocusDisabled: Story = {
+  name: 'Scrolling Issue Test (autoFocus disabled)',
+  decorators: [
+    Story => (
+      <ThemeProvider>
+        <div style={{ height: '300vh', width: '100%' }}>
+          {/* Content above the slide */}
+          <div
+            style={{
+              height: '100vh',
+              backgroundColor: '#f0f0f0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              borderBottom: '2px solid #ccc',
+            }}
+          >
+            <h1>Content Above the Slide (autoFocus disabled)</h1>
+            <p>Scroll down to see the IndustryMarkdownSlide component</p>
+            <p>With autoFocusOnVisible=false, the page should NOT scroll automatically</p>
+          </div>
+
+          {/* The markdown slide */}
+          <div style={{ height: '100vh', width: '100%' }}>
+            <Story />
+          </div>
+
+          {/* Content below the slide */}
+          <div
+            style={{
+              height: '100vh',
+              backgroundColor: '#e0e0e0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              borderTop: '2px solid #ccc',
+            }}
+          >
+            <h1>Content Below the Slide</h1>
+            <p>This content should only be visible if you scroll down past the slide</p>
+          </div>
+        </div>
+      </ThemeProvider>
+    ),
+  ],
+  parameters: {
+    layout: 'fullscreen',
+  },
+  args: {
+    content: `# Scroll Issue Test (autoFocus disabled)
+
+This slide has \`autoFocusOnVisible={false}\` set.
+
+## Expected Behavior
+- Page should start at the top (showing "Content Above the Slide")
+- The page should NOT automatically scroll to this slide
+
+## Comparison
+- Compare this story with "Scrolling Issue Test" to see if autoFocusOnVisible is causing the scroll issue`,
+    slideIdPrefix: 'scroll-test-no-autofocus',
+    slideIndex: 0,
+    isVisible: true,
+    autoFocusOnVisible: false,
+  },
+};
+
 export const MermaidFontScaling: Story = {
   name: 'Mermaid with Font Scaling',
   args: {

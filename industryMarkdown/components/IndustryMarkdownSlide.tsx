@@ -755,10 +755,10 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   );
 
   // Auto-focus the container when it becomes visible (optional)
+  // This enables keyboard scrolling without scrolling the page to the slide
   useEffect(() => {
     if (autoFocusOnVisible && isVisible && slideRef.current) {
-      console.log('🎯 Auto-focusing slide container');
-      slideRef.current.focus();
+      slideRef.current.focus({ preventScroll: true });
     }
   }, [autoFocusOnVisible, isVisible]);
 

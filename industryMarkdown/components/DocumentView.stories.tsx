@@ -34,7 +34,7 @@ This is a comprehensive document view that demonstrates various markdown feature
 
 ## Introduction
 
-The DocumentView component is designed to display markdown content in a readable, document-style format. It supports both single documents and segmented views with multiple sections.
+The DocumentView component is designed to display markdown content in a readable, document-style format.
 
 ## Features
 
@@ -89,108 +89,17 @@ greet("World");
 
 The DocumentView component provides a flexible and powerful way to display markdown content in your applications.`;
 
-const segmentedContent = [
-  `# Section 1: Getting Started
-
-Welcome to the documentation! This first section covers the basics of getting started with our component library.
-
-## Installation
-
-\`\`\`bash
-npm install themed-markdown
-\`\`\`
-
-## Basic Usage
-
-Import and use the components in your React application:
-
-\`\`\`javascript
-import { DocumentView, defaultTheme } from 'themed-markdown';
-
-function App() {
-  return <DocumentView content={markdownContent} theme={defaultTheme} />;
-}
-\`\`\``,
-
-  `# Section 2: Configuration
-
-This section covers configuration options and customization.
-
-## Theme Configuration
-
-You can customize the appearance using the theme prop:
-
-\`\`\`javascript
-const customTheme = {
-  colors: {
-    primary: '#007bff',
-    background: '#ffffff',
-    text: '#333333',
-  },
-};
-\`\`\`
-
-## Layout Options
-
-- **maxWidth**: Control the maximum width of the content
-- **padding**: Adjust the spacing around content
-- **showSectionHeaders**: Toggle section headers in segmented view`,
-
-  `# Section 3: Advanced Features
-
-Explore advanced features and capabilities.
-
-## Mermaid Diagrams
-
-\`\`\`mermaid
-graph TD
-    A[Start] --> B[Process]
-    B --> C{Decision}
-    C -->|Yes| D[Action 1]
-    C -->|No| E[Action 2]
-    D --> F[End]
-    E --> F
-\`\`\`
-
-## Interactive Elements
-
-### Checkboxes
-- [ ] Interactive checkbox 1
-- [ ] Interactive checkbox 2
-- [x] Completed task
-
-### Event Handlers
-
-The component supports various event handlers for interactivity:
-- \`onCheckboxChange\`: Handle checkbox state changes
-- \`onSectionClick\`: Handle section navigation
-- \`onLinkClick\`: Handle link clicks`,
-];
-
 export const SingleDocument: Story = {
   args: {
     content: singleDocumentContent,
-    showSegmented: false,
     maxWidth: '900px',
     slideIdPrefix: 'doc',
-  },
-};
-
-export const SegmentedDocument: Story = {
-  args: {
-    content: segmentedContent,
-    showSegmented: true,
-    showSectionHeaders: true,
-    showSeparators: true,
-    maxWidth: '900px',
-    slideIdPrefix: 'segment',
   },
 };
 
 export const DarkThemeDocument: Story = {
   args: {
     content: singleDocumentContent,
-    showSegmented: false,
     maxWidth: '900px',
     slideIdPrefix: 'dark-doc',
   },
@@ -199,20 +108,8 @@ export const DarkThemeDocument: Story = {
 export const WideDocument: Story = {
   args: {
     content: singleDocumentContent,
-    showSegmented: false,
     maxWidth: '1400px',
     slideIdPrefix: 'wide-doc',
-  },
-};
-
-export const CompactSegments: Story = {
-  args: {
-    content: segmentedContent,
-    showSegmented: true,
-    showSectionHeaders: false,
-    showSeparators: false,
-    maxWidth: '800px',
-    slideIdPrefix: 'compact',
   },
 };
 
@@ -268,7 +165,6 @@ function TodoList({ items }) {
 - [GitHub Repository](https://github.com/example/repo)
 - [Documentation](https://docs.example.com)
 - [API Reference](https://api.example.com)`,
-    showSegmented: false,
     maxWidth: '900px',
     slideIdPrefix: 'interactive',
     onCheckboxChange: (slideIndex, lineNumber, checked) => {
@@ -437,7 +333,6 @@ classDiagram
     Component <|-- DocumentView
     Component <|-- SlidePresentation
 \`\`\``,
-    showSegmented: false,
     maxWidth: '1000px',
     slideIdPrefix: 'mermaid-doc',
   },
@@ -446,7 +341,6 @@ classDiagram
 export const TransparentBackground: Story = {
   args: {
     content: singleDocumentContent,
-    showSegmented: false,
     maxWidth: '900px',
     slideIdPrefix: 'transparent-doc',
     transparentBackground: true,
