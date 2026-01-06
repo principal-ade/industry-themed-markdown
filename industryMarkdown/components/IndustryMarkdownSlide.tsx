@@ -128,6 +128,9 @@ export interface IndustryMarkdownSlideProps {
 
   // === External Data ===
   repositoryInfo?: RepositoryInfo; // Repository information for resolving relative image URLs
+
+  // === Editing ===
+  editable?: boolean; // When true, checkboxes are interactive. Default: false
 }
 
 // Override highlight.js token background colors and ensure proper text colors
@@ -484,6 +487,9 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
 
   // === External Data ===
   repositoryInfo,
+
+  // === Editing ===
+  editable = false,
 }: IndustryMarkdownSlideProps) {
   const slideRef = useRef<HTMLDivElement>(null);
   const scrollPositionsRef = useRef<Map<number, number>>(new Map());
@@ -972,6 +978,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         slideHeaderMarginTopOverride,
         index: chunkIndex,
         repositoryInfo,
+        editable,
       });
 
       // Add mark component for search highlighting with inline styles
@@ -1013,6 +1020,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       slideHeaderMarginTopOverride,
       repositoryInfo,
       searchQuery,
+      editable,
     ],
   );
 

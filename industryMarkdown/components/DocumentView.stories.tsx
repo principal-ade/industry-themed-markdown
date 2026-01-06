@@ -1,4 +1,4 @@
-import { ThemeProvider, theme as defaultTheme } from '@principal-ade/industry-theme';
+import { ThemeProvider, theme as defaultTheme, regalTheme } from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
@@ -361,4 +361,13 @@ export const TransparentBackground: Story = {
       </ThemeProvider>
     ),
   ],
+};
+
+export const RegalThemeDocument: Story = {
+  args: {
+    content: singleDocumentContent,
+    maxWidth: '900px',
+    slideIdPrefix: 'regal-doc',
+    theme: regalTheme,
+  },
 };

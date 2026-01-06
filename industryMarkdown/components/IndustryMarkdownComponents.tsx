@@ -41,6 +41,7 @@ interface IndustryMarkdownComponentsProps {
   slideHeaderMarginTopOverride?: number;
   index: number;
   repositoryInfo?: RepositoryInfo;
+  editable?: boolean; // When true, checkboxes are interactive. Default: false
 }
 
 // Global cache to track failed images and prevent repeated requests
@@ -220,6 +221,7 @@ export const createIndustryMarkdownComponents = ({
   slideHeaderMarginTopOverride,
   index,
   repositoryInfo,
+  editable = false,
 }: IndustryMarkdownComponentsProps) => {
   // Determine if we're in dark mode by checking if background is dark
   // Convert hex to RGB and calculate luminance
@@ -248,9 +250,11 @@ export const createIndustryMarkdownComponents = ({
           fontSize: theme.fontSizes[5],
           lineHeight: theme.lineHeights.heading,
           fontWeight: theme.fontWeights.bold,
-          marginTop: index === 0 ? 0 : theme.space[4],
+          marginTop: theme.space[4],
           marginBottom: theme.space[4],
           fontFamily: theme.fonts.heading,
+          paddingBottom: theme.space[2],
+          borderBottom: `1px solid ${theme.colors.border}`,
           ...headerStyles,
         }}
         {...props}
@@ -265,9 +269,11 @@ export const createIndustryMarkdownComponents = ({
           fontSize: theme.fontSizes[4],
           lineHeight: theme.lineHeights.heading,
           fontWeight: theme.fontWeights.bold,
-          marginTop: index === 0 ? 0 : theme.space[4],
+          marginTop: theme.space[4],
           marginBottom: theme.space[3],
           fontFamily: theme.fonts.heading,
+          paddingBottom: theme.space[2],
+          borderBottom: `1px solid ${theme.colors.border}`,
           ...headerStyles,
         }}
         {...props}
@@ -282,7 +288,7 @@ export const createIndustryMarkdownComponents = ({
           fontSize: theme.fontSizes[3],
           lineHeight: theme.lineHeights.heading,
           fontWeight: theme.fontWeights.semibold,
-          marginTop: index === 0 ? 0 : theme.space[4],
+          marginTop: theme.space[4],
           marginBottom: theme.space[3],
           fontFamily: theme.fonts.heading,
         }}
@@ -290,6 +296,54 @@ export const createIndustryMarkdownComponents = ({
       >
         {children}
       </h3>
+    ),
+    h4: ({ children, ...props }: HeadingProps) => (
+      <h4
+        style={{
+          color: theme.colors.text,
+          fontSize: theme.fontSizes[2],
+          lineHeight: theme.lineHeights.heading,
+          fontWeight: theme.fontWeights.semibold,
+          marginTop: theme.space[3],
+          marginBottom: theme.space[2],
+          fontFamily: theme.fonts.heading,
+        }}
+        {...props}
+      >
+        {children}
+      </h4>
+    ),
+    h5: ({ children, ...props }: HeadingProps) => (
+      <h5
+        style={{
+          color: theme.colors.text,
+          fontSize: theme.fontSizes[1],
+          lineHeight: theme.lineHeights.heading,
+          fontWeight: theme.fontWeights.semibold,
+          marginTop: theme.space[3],
+          marginBottom: theme.space[1],
+          fontFamily: theme.fonts.heading,
+        }}
+        {...props}
+      >
+        {children}
+      </h5>
+    ),
+    h6: ({ children, ...props }: HeadingProps) => (
+      <h6
+        style={{
+          color: theme.colors.text,
+          fontSize: theme.fontSizes[1],
+          lineHeight: theme.lineHeights.heading,
+          fontWeight: theme.fontWeights.medium,
+          marginTop: theme.space[3],
+          marginBottom: theme.space[1],
+          fontFamily: theme.fonts.heading,
+        }}
+        {...props}
+      >
+        {children}
+      </h6>
     ),
 
     // Paragraphs
@@ -401,12 +455,13 @@ export const createIndustryMarkdownComponents = ({
                 checked={isChecked}
                 onChange={handleChange}
                 onClick={e => e.stopPropagation()}
+                disabled={!editable}
                 style={{
                   marginRight: theme.space[2],
                   marginTop: theme.space[1],
                   width: '16px',
                   height: '16px',
-                  cursor: 'pointer',
+                  cursor: editable ? 'pointer' : 'default',
                 }}
                 id={id}
               />
@@ -414,7 +469,7 @@ export const createIndustryMarkdownComponents = ({
                 htmlFor={id}
                 style={{
                   flex: 1,
-                  cursor: 'pointer',
+                  cursor: editable ? 'pointer' : 'default',
                   color: isChecked ? theme.colors.textMuted : 'inherit',
                   lineHeight: theme.lineHeights.relaxed, // More relaxed line height for readability
                 }}
@@ -790,7 +845,7 @@ export const createIndustryMarkdownComponents = ({
               <div
                 style={{
                   margin: 0,
-                  padding: theme.space[5],
+                  padding: theme.space[1],
                   backgroundColor: 'transparent',
                   fontSize: theme.fontSizes[1],
                   lineHeight: theme.lineHeights.body,
@@ -825,7 +880,7 @@ export const createIndustryMarkdownComponents = ({
               <pre
                 style={{
                   margin: 0,
-                  padding: theme.space[4],
+                  padding: theme.space[1],
                   backgroundColor: 'transparent',
                   overflow: 'auto',
                   fontSize: theme.fontSizes[1],

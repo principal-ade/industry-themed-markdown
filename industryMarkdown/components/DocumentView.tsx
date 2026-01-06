@@ -32,6 +32,9 @@ export interface DocumentViewProps {
   fontSizeScale?: number;
   theme: Theme;
   transparentBackground?: boolean;
+
+  // Editing
+  editable?: boolean; // When true, checkboxes are interactive. Default: false
 }
 
 export const DocumentView: React.FC<DocumentViewProps> = ({
@@ -49,6 +52,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
   fontSizeScale,
   theme,
   transparentBackground = false,
+  editable = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const backgroundColor = transparentBackground ? 'transparent' : theme.colors.background;
@@ -85,6 +89,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           handlePromptCopy={handlePromptCopy}
           repositoryInfo={repositoryInfo}
           transparentBackground={transparentBackground}
+          editable={editable}
         />
       </div>
     </div>
