@@ -20,6 +20,10 @@ export type { SlideSearchBarProps, SearchResult } from './components/SlideSearch
 export { DocumentView } from './components/DocumentView';
 export type { DocumentViewProps } from './components/DocumentView';
 
+// Agent Skill markdown component with frontmatter parsing
+export { SkillMarkdown } from './components/SkillMarkdown';
+export type { SkillMarkdownProps } from './components/SkillMarkdown';
+
 // Industry-themed editable markdown component
 export { IndustryEditableMarkdownSlide } from './components/IndustryEditableMarkdownSlide';
 export type { IndustryEditableMarkdownSlideProps } from './components/IndustryEditableMarkdownSlide';
