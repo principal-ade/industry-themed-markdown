@@ -1,5 +1,8 @@
 // Main entry point for themed-markdown package
 
+// Auto-inject highlight.js CSS for syntax highlighting
+import './industryMarkdown/utils/injectStyles';
+
 // Components
 export { IndustryMarkdownSlide } from './industryMarkdown/components/IndustryMarkdownSlide';
 export type { IndustryMarkdownSlideProps } from './industryMarkdown/components/IndustryMarkdownSlide';
