@@ -13,6 +13,9 @@ export type { SlidePresentationBookProps } from './industryMarkdown/components/S
 export { DocumentView } from './industryMarkdown/components/DocumentView';
 export type { DocumentViewProps } from './industryMarkdown/components/DocumentView';
 
+export { SkillMarkdown } from './industryMarkdown/components/SkillMarkdown';
+export type { SkillMarkdownProps } from './industryMarkdown/components/SkillMarkdown';
+
 export { SlideNavigationHeader } from './industryMarkdown/components/SlideNavigationHeader';
 export type { SlideNavigationHeaderProps } from './industryMarkdown/components/SlideNavigationHeader';
 
@@ -85,7 +88,6 @@ export {
 export {
   terminalTheme,
   regalTheme,
-  glassmorphismTheme,
   matrixTheme,
   matrixMinimalTheme,
   slateTheme,

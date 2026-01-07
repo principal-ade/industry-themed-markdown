@@ -146,7 +146,7 @@ const SkillMetadataSection: React.FC<{ metadata: SkillMetadata; theme: Theme }> 
                       borderRadius: '4px',
                       fontSize: theme.fontSizes[0],
                       fontWeight: 500,
-                      fontFamily: theme.fonts.mono,
+                      fontFamily: theme.fonts.monospace,
                     }}
                   >
                     {tool}
@@ -184,7 +184,7 @@ const SkillMetadataSection: React.FC<{ metadata: SkillMetadata; theme: Theme }> 
                     <span
                       style={{
                         color: theme.colors.text,
-                        fontFamily: theme.fonts.mono,
+                        fontFamily: theme.fonts.monospace,
                       }}
                     >
                       {value}
@@ -253,7 +253,13 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
     if (showRawOnError) {
       // Fall back to rendering raw markdown
       return (
-        <div className={className} style={{ padding: theme.space[3] }}>
+        <div
+          className={className}
+          style={{
+            padding: theme.space[3],
+            background: theme.colors.background,
+          }}
+        >
           <IndustryMarkdownSlide
             content={content}
             theme={theme}
@@ -266,7 +272,14 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
     }
 
     return (
-      <div className={className} style={{ padding: theme.space[4], textAlign: 'center' }}>
+      <div
+        className={className}
+        style={{
+          padding: theme.space[4],
+          textAlign: 'center',
+          background: theme.colors.background,
+        }}
+      >
         <div
           style={{
             background: '#fff3cd',
@@ -297,7 +310,7 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
           {error instanceof SkillValidationError && error.field && (
             <p
               style={{
-                fontFamily: theme.fonts.mono,
+                fontFamily: theme.fonts.monospace,
                 color: '#856404',
                 fontSize: theme.fontSizes[0],
               }}
@@ -319,6 +332,7 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
           textAlign: 'center',
           color: theme.colors.textSecondary,
           fontStyle: 'italic',
+          background: theme.colors.background,
         }}
       >
         Loading...
@@ -327,7 +341,13 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
   }
 
   return (
-    <div className={className} style={{ padding: theme.space[3] }}>
+    <div
+      className={className}
+      style={{
+        padding: theme.space[3],
+        background: theme.colors.background,
+      }}
+    >
       <SkillMetadataSection metadata={parsed.metadata} theme={theme} />
       <IndustryMarkdownSlide
         content={parsed.body}

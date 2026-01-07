@@ -21,19 +21,20 @@ const preview: Preview = {
       },
     },
     backgrounds: {
-      default: 'light',
-      values: [
-        {
+      options: {
+        light: {
           name: 'light',
           value: '#ffffff',
         },
-        {
+
+        dark: {
           name: 'dark',
           value: '#1a1a1a',
-        },
-      ],
+        }
+      }
     },
   },
+
   decorators: [
     Story => {
       return (
@@ -43,6 +44,7 @@ const preview: Preview = {
       );
     },
   ],
+
   globalTypes: {
     theme: {
       name: 'Theme',
@@ -58,6 +60,12 @@ const preview: Preview = {
       },
     },
   },
+
+  initialGlobals: {
+    backgrounds: {
+      value: 'light'
+    }
+  }
 };
 
 export default preview;

@@ -4,11 +4,13 @@ const config: StorybookConfig = {
     '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     '../industryMarkdown/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],
+
   addons: [
     '@storybook/addon-webpack5-compiler-swc',
     '@storybook/addon-onboarding',
     '@storybook/addon-docs',
   ],
+
   framework: {
     name: '@storybook/react-webpack5',
     options: {
@@ -17,13 +19,11 @@ const config: StorybookConfig = {
       },
     },
   },
+
   typescript: {
     check: false,
     reactDocgen: 'react-docgen-typescript',
-  },
-  docs: {
-    autodocs: 'tag',
-  },
+  }
 };
 
 export default config;
