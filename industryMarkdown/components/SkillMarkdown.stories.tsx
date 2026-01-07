@@ -12,12 +12,14 @@ const meta = {
   decorators: [
     (Story) => (
       <ThemeProvider theme={defaultTheme}>
-        <Story />
+        <div style={{ height: '100vh', width: '100%' }}>
+          <Story />
+        </div>
       </ThemeProvider>
     ),
   ],
   parameters: {
-    layout: 'padded',
+    layout: 'fullscreen',
     docs: {
       description: {
         component:
@@ -32,14 +34,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const basicSkillContent = `---
-name: Legal Review
+name: legal-review
 description: Review contracts and legal documents for potential issues and compliance
 license: MIT
 compatibility: ">=1.0.0"
-allowed-tools:
-  - document-reader
-  - legal-db-search
-  - compliance-checker
+allowed-tools: "Read Write Bash(jq:*)"
 metadata:
   author: AI Team
   version: "1.0.0"
@@ -83,7 +82,7 @@ const result = await agent.useSkill('legal-review', {
 `;
 
 const minimalSkillContent = `---
-name: Email Drafter
+name: email-drafter
 description: Draft professional emails based on context and intent
 ---
 
@@ -99,15 +98,11 @@ Simple skill for drafting emails.
 `;
 
 const fullFeaturedSkillContent = `---
-name: SQL Query Generator
+name: sql-query-generator
 description: Generate optimized SQL queries from natural language descriptions
 license: Apache-2.0
-compatibility: ">=2.0.0"
-allowed-tools:
-  - database-schema-analyzer
-  - query-optimizer
-  - security-validator
-  - performance-profiler
+compatibility: "Requires PostgreSQL 12+, MySQL 8+, or SQLite 3.35+. Network access required for schema introspection."
+allowed-tools: "Read Write Bash(psql:*) Bash(mysql:*) Bash(sqlite3:*)"
 metadata:
   author: Database Team
   version: "2.1.0"
@@ -229,7 +224,7 @@ Because description is missing.
 `;
 
 const malformedYamlContent = `---
-name: Broken Skill
+name: broken-skill
 description: This has malformed YAML
   bad indentation
   - and list issues
@@ -238,6 +233,56 @@ description: This has malformed YAML
 # Broken YAML
 
 This won't parse correctly.
+`;
+
+const invalidNameUppercase = `---
+name: Email-Sender
+description: This skill name contains uppercase letters which violates the spec
+---
+
+# Email Sender
+
+Names must be lowercase only.
+`;
+
+const invalidNameConsecutiveHyphens = `---
+name: email--sender
+description: This skill name contains consecutive hyphens which violates the spec
+---
+
+# Email Sender
+
+Names cannot have consecutive hyphens.
+`;
+
+const invalidNameStartsWithHyphen = `---
+name: -email-sender
+description: This skill name starts with a hyphen which violates the spec
+---
+
+# Email Sender
+
+Names cannot start with a hyphen.
+`;
+
+const invalidNameEndsWithHyphen = `---
+name: email-sender-
+description: This skill name ends with a hyphen which violates the spec
+---
+
+# Email Sender
+
+Names cannot end with a hyphen.
+`;
+
+const invalidNameSpecialChars = `---
+name: email_sender@v1
+description: This skill name contains special characters which violates the spec
+---
+
+# Email Sender
+
+Names can only contain lowercase alphanumeric and hyphens.
 `;
 
 /**
@@ -325,12 +370,10 @@ export const InvalidWithFallback: Story = {
 export const WithCodeExamples: Story = {
   args: {
     content: `---
-name: API Client Generator
+name: api-client-generator
 description: Generate type-safe API clients from OpenAPI specifications
 license: MIT
-allowed-tools:
-  - openapi-parser
-  - typescript-generator
+allowed-tools: "Read Write Bash(npm:*) Bash(python:*)"
 ---
 
 # API Client Generator
@@ -384,12 +427,9 @@ client = generate_client(
 export const WithTables: Story = {
   args: {
     content: `---
-name: Data Transformer
+name: data-transformer
 description: Transform data between different formats and schemas
-allowed-tools:
-  - json-schema-validator
-  - csv-parser
-  - xml-parser
+allowed-tools: "Read Write Bash(jq:*) Bash(yq:*)"
 ---
 
 # Data Transformer
@@ -424,5 +464,100 @@ Transform data between formats.
     theme: defaultTheme,
     onParsed: fn(),
     onError: fn(),
+  },
+};
+
+/**
+ * Invalid skill name with uppercase letters (violates spec)
+ */
+export const InvalidNameUppercase: Story = {
+  args: {
+    content: invalidNameUppercase,
+    theme: defaultTheme,
+    onError: fn(),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Skill names must be lowercase alphanumeric and hyphens only. Uppercase letters violate the Agent Skills specification.',
+      },
+    },
+  },
+};
+
+/**
+ * Invalid skill name with consecutive hyphens (violates spec)
+ */
+export const InvalidNameConsecutiveHyphens: Story = {
+  args: {
+    content: invalidNameConsecutiveHyphens,
+    theme: defaultTheme,
+    onError: fn(),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Skill names cannot contain consecutive hyphens according to the Agent Skills specification.',
+      },
+    },
+  },
+};
+
+/**
+ * Invalid skill name starting with hyphen (violates spec)
+ */
+export const InvalidNameStartsWithHyphen: Story = {
+  args: {
+    content: invalidNameStartsWithHyphen,
+    theme: defaultTheme,
+    onError: fn(),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Skill names cannot start with a hyphen according to the Agent Skills specification.',
+      },
+    },
+  },
+};
+
+/**
+ * Invalid skill name ending with hyphen (violates spec)
+ */
+export const InvalidNameEndsWithHyphen: Story = {
+  args: {
+    content: invalidNameEndsWithHyphen,
+    theme: defaultTheme,
+    onError: fn(),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Skill names cannot end with a hyphen according to the Agent Skills specification.',
+      },
+    },
+  },
+};
+
+/**
+ * Invalid skill name with special characters (violates spec)
+ */
+export const InvalidNameSpecialChars: Story = {
+  args: {
+    content: invalidNameSpecialChars,
+    theme: defaultTheme,
+    onError: fn(),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Skill names can only contain lowercase alphanumeric characters and hyphens. Special characters like underscores and @ symbols violate the Agent Skills specification.',
+      },
+    },
   },
 };

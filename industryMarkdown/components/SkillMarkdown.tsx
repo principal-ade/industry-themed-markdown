@@ -30,32 +30,88 @@ export interface SkillMarkdownProps {
 }
 
 /**
+ * Convert date string to relative time (e.g., "2 days ago", "3 months ago")
+ */
+const formatRelativeTime = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+    }
+    if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+    }
+    const years = Math.floor(diffDays / 365);
+    return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+  } catch {
+    return dateString; // Return original string if parsing fails
+  }
+};
+
+/**
  * Render skill metadata section
  */
 const SkillMetadataSection: React.FC<{ metadata: SkillMetadata; theme: Theme }> = ({
   metadata,
   theme,
 }) => {
-
   return (
-    <div
-      style={{
-        borderBottom: `2px solid ${theme.colors.border}`,
-        paddingBottom: theme.space[4],
-        marginBottom: theme.space[4],
-      }}
-    >
-      <div style={{ marginBottom: theme.space[3] }}>
-        <h1
-          style={{
-            fontSize: theme.fontSizes[6],
-            fontWeight: 700,
-            margin: `0 0 ${theme.space[2]} 0`,
-            color: theme.colors.text,
-          }}
-        >
-          {metadata.name}
-        </h1>
+    <div style={{
+      borderBottom: `2px solid ${theme.colors.border}`,
+      paddingBottom: theme.space[3],
+      marginBottom: theme.space[2],
+    }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: theme.space[2] }}>
+          <h1
+            style={{
+              fontSize: theme.fontSizes[6],
+              fontWeight: 700,
+              margin: 0,
+              color: theme.colors.text,
+            }}
+          >
+            {metadata.name}
+          </h1>
+          {(metadata.metadata?.['last-updated'] || metadata.license) && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: theme.space[1], marginLeft: theme.space[3], marginTop: theme.space[1] }}>
+              {metadata.metadata?.['last-updated'] && (
+                <span
+                  style={{
+                    fontSize: theme.fontSizes[0],
+                    color: theme.colors.textSecondary,
+                    fontFamily: theme.fonts.monospace,
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {formatRelativeTime(metadata.metadata['last-updated'])}
+                </span>
+              )}
+              {metadata.license && (
+                <span
+                  style={{
+                    fontSize: theme.fontSizes[1],
+                    color: theme.colors.textSecondary,
+                    fontFamily: theme.fonts.monospace,
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {metadata.license}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
         <p
           style={{
             fontSize: theme.fontSizes[3],
@@ -66,136 +122,6 @@ const SkillMetadataSection: React.FC<{ metadata: SkillMetadata; theme: Theme }> 
         >
           {metadata.description}
         </p>
-      </div>
-
-      {(metadata.license ||
-        metadata.compatibility ||
-        metadata['allowed-tools'] ||
-        metadata.metadata) && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.space[3],
-            padding: theme.space[3],
-            background: theme.colors.background,
-            borderRadius: '8px',
-            border: `1px solid ${theme.colors.border}`,
-          }}
-        >
-          {metadata.license && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.space[1] }}>
-              <span
-                style={{
-                  fontWeight: 600,
-                  fontSize: theme.fontSizes[0],
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: theme.colors.textSecondary,
-                }}
-              >
-                License:
-              </span>
-              <span style={{ fontSize: theme.fontSizes[2], color: theme.colors.text }}>
-                {metadata.license}
-              </span>
-            </div>
-          )}
-
-          {metadata.compatibility && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.space[1] }}>
-              <span
-                style={{
-                  fontWeight: 600,
-                  fontSize: theme.fontSizes[0],
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: theme.colors.textSecondary,
-                }}
-              >
-                Compatibility:
-              </span>
-              <span style={{ fontSize: theme.fontSizes[2], color: theme.colors.text }}>
-                {metadata.compatibility}
-              </span>
-            </div>
-          )}
-
-          {metadata['allowed-tools'] && metadata['allowed-tools'].length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.space[1] }}>
-              <span
-                style={{
-                  fontWeight: 600,
-                  fontSize: theme.fontSizes[0],
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: theme.colors.textSecondary,
-                }}
-              >
-                Allowed Tools:
-              </span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.space[1] }}>
-                {metadata['allowed-tools'].map((tool, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      display: 'inline-block',
-                      padding: `${theme.space[1]} ${theme.space[2]}`,
-                      background: theme.colors.primary,
-                      color: theme.colors.background,
-                      borderRadius: '4px',
-                      fontSize: theme.fontSizes[0],
-                      fontWeight: 500,
-                      fontFamily: theme.fonts.monospace,
-                    }}
-                  >
-                    {tool}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {metadata.metadata && Object.keys(metadata.metadata).length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.space[1] }}>
-              <span
-                style={{
-                  fontWeight: 600,
-                  fontSize: theme.fontSizes[0],
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: theme.colors.textSecondary,
-                }}
-              >
-                Metadata:
-              </span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: theme.space[1] }}>
-                {Object.entries(metadata.metadata).map(([key, value]) => (
-                  <div key={key} style={{ display: 'flex', gap: theme.space[2], fontSize: theme.fontSizes[0] }}>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        color: theme.colors.textSecondary,
-                        minWidth: '100px',
-                      }}
-                    >
-                      {key}:
-                    </span>
-                    <span
-                      style={{
-                        color: theme.colors.text,
-                        fontFamily: theme.fonts.monospace,
-                      }}
-                    >
-                      {value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
@@ -241,7 +167,7 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
   // Safety check for theme
   if (!theme || !theme.space) {
     return (
-      <div className={className}>
+      <div className={className} style={{ width: '100%', height: '100%' }}>
         <div style={{ padding: '2rem', textAlign: 'center', color: '#856404' }}>
           Error: Theme not available. Wrap component in ThemeProvider.
         </div>
@@ -256,17 +182,21 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
         <div
           className={className}
           style={{
-            padding: theme.space[3],
+            width: '100%',
+            height: '100%',
+            overflow: 'auto',
             background: theme.colors.background,
           }}
         >
-          <IndustryMarkdownSlide
-            content={content}
-            theme={theme}
-            slideIdPrefix="skill-fallback"
-            slideIndex={0}
-            isVisible={true}
-          />
+          <div style={{ padding: theme.space[3] }}>
+            <IndustryMarkdownSlide
+              content={content}
+              theme={theme}
+              slideIdPrefix="skill-fallback"
+              slideIndex={0}
+              isVisible={true}
+            />
+          </div>
         </div>
       );
     }
@@ -275,9 +205,15 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
       <div
         className={className}
         style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%',
           padding: theme.space[4],
-          textAlign: 'center',
           background: theme.colors.background,
+          overflow: 'auto',
         }}
       >
         <div
@@ -287,7 +223,6 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
             borderRadius: '8px',
             padding: theme.space[4],
             maxWidth: '600px',
-            margin: '0 auto',
           }}
         >
           <h2 style={{ color: '#856404', marginTop: 0 }}>Failed to parse SKILL.md</h2>
@@ -328,8 +263,12 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
       <div
         className={className}
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%',
           padding: theme.space[4],
-          textAlign: 'center',
           color: theme.colors.textSecondary,
           fontStyle: 'italic',
           background: theme.colors.background,
@@ -344,18 +283,149 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
     <div
       className={className}
       style={{
-        padding: theme.space[3],
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         background: theme.colors.background,
       }}
     >
-      <SkillMetadataSection metadata={parsed.metadata} theme={theme} />
-      <IndustryMarkdownSlide
-        content={parsed.body}
-        theme={theme}
-        slideIdPrefix="skill-body"
-        slideIndex={0}
-        isVisible={true}
-      />
+      <div style={{ padding: theme.space[3], paddingBottom: 0 }}>
+        <SkillMetadataSection metadata={parsed.metadata} theme={theme} />
+      </div>
+      <div style={{ flex: 1, overflow: 'auto', padding: theme.space[3], paddingTop: 0 }}>
+        <div style={{ display: 'flex', gap: theme.space[4], alignItems: 'flex-start' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <IndustryMarkdownSlide
+              content={parsed.body}
+              theme={theme}
+              slideIdPrefix="skill-body"
+              slideIndex={0}
+              isVisible={true}
+            />
+          </div>
+          {(parsed.metadata.compatibility ||
+            parsed.metadata['allowed-tools'] ||
+            parsed.metadata.metadata) && (
+            <div
+              style={{
+                width: '300px',
+                flexShrink: 0,
+                padding: theme.space[3],
+                background: theme.colors.background,
+                position: 'sticky',
+                top: theme.space[3],
+              }}
+            >
+              {parsed.metadata.compatibility && (
+                <div style={{ marginBottom: theme.space[3] }}>
+                  <div
+                    style={{
+                      fontFamily: theme.fonts.heading,
+                      fontWeight: 600,
+                      fontSize: theme.fontSizes[0],
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: theme.colors.textSecondary,
+                      marginBottom: theme.space[1],
+                    }}
+                  >
+                    Compatibility
+                  </div>
+                  <div style={{ fontSize: theme.fontSizes[1], color: theme.colors.text, fontFamily: theme.fonts.body }}>
+                    {parsed.metadata.compatibility}
+                  </div>
+                </div>
+              )}
+
+              {parsed.metadata['allowed-tools'] && parsed.metadata['allowed-tools'].length > 0 && (
+                <div style={{ marginBottom: theme.space[3] }}>
+                  <div
+                    style={{
+                      fontFamily: theme.fonts.heading,
+                      fontWeight: 600,
+                      fontSize: theme.fontSizes[0],
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: theme.colors.textSecondary,
+                      marginBottom: theme.space[1],
+                    }}
+                  >
+                    Allowed Tools
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.space[1] }}>
+                    {parsed.metadata['allowed-tools'].map((tool, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          display: 'inline-block',
+                          paddingTop: theme.space[2],
+                          paddingBottom: theme.space[2],
+                          paddingLeft: theme.space[3],
+                          paddingRight: theme.space[3],
+                          background: theme.colors.primary,
+                          color: theme.colors.background,
+                          borderRadius: '4px',
+                          fontSize: theme.fontSizes[0],
+                          fontWeight: 500,
+                          fontFamily: theme.fonts.monospace,
+                        }}
+                      >
+                        {tool}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {parsed.metadata.metadata && Object.keys(parsed.metadata.metadata).length > 0 && (
+                <div>
+                  <div
+                    style={{
+                      fontFamily: theme.fonts.heading,
+                      fontWeight: 600,
+                      fontSize: theme.fontSizes[0],
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: theme.colors.textSecondary,
+                      marginBottom: theme.space[1],
+                    }}
+                  >
+                    Metadata
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: theme.space[1] }}>
+                    {Object.entries(parsed.metadata.metadata)
+                      .filter(([key]) => key !== 'last-updated')
+                      .map(([key, value]) => (
+                        <div key={key}>
+                          <div
+                            style={{
+                              fontSize: theme.fontSizes[0],
+                              fontWeight: 600,
+                              color: theme.colors.textSecondary,
+                              fontFamily: theme.fonts.body,
+                            }}
+                          >
+                            {key}:
+                          </div>
+                          <div
+                            style={{
+                              fontSize: theme.fontSizes[1],
+                              color: theme.colors.text,
+                              fontFamily: theme.fonts.monospace,
+                            }}
+                          >
+                            {value}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
