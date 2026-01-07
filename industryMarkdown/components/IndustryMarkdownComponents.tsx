@@ -237,8 +237,9 @@ export const createIndustryMarkdownComponents = ({
 
   // Header styles with override support
   const headerStyles = {} as React.CSSProperties;
-  if (index === 0 && slideHeaderMarginTopOverride) {
-    headerStyles.marginTop = `${slideHeaderMarginTopOverride}px`;
+  if (index === 0) {
+    // First element should never have top margin unless explicitly overridden
+    headerStyles.marginTop = slideHeaderMarginTopOverride ? `${slideHeaderMarginTopOverride}px` : 0;
   }
 
   return {
