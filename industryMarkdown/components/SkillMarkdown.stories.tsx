@@ -1,7 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from 'storybook/test';
-import { SkillMarkdown } from './SkillMarkdown';
 import { ThemeProvider, theme as defaultTheme } from '@principal-ade/industry-theme';
+import type { ParsedSkill } from '@principal-ade/markdown-utils';
+import type { Meta, StoryObj } from '@storybook/react';
+import React, { useEffect, useRef, useState } from 'react';
+import { fn } from 'storybook/test';
+
+import { SkillMarkdown } from './SkillMarkdown';
 
 /**
  * SkillMarkdown component for rendering Agent Skills with frontmatter
@@ -557,6 +560,127 @@ export const InvalidNameSpecialChars: Story = {
       description: {
         story:
           'Skill names can only contain lowercase alphanumeric characters and hyphens. Special characters like underscores and @ symbols violate the Agent Skills specification.',
+      },
+    },
+  },
+};
+
+/**
+ * Skill with explicit container width (skips ResizeObserver)
+ */
+export const WithContainerWidth: Story = {
+  args: {
+    content: basicSkillContent,
+    theme: defaultTheme,
+    containerWidth: 800,
+    onParsed: fn(),
+    onError: fn(),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When containerWidth is provided, IndustryMarkdownSlide skips ResizeObserver and uses the explicit width for padding calculations. This can improve performance when the parent already knows the container width.',
+      },
+    },
+  },
+};
+
+/**
+ * Wrapper component that uses ResizeObserver and passes width to SkillMarkdown
+ */
+const SkillMarkdownWithResizeObserver: React.FC<{
+  content: string;
+  onParsed?: (skill: ParsedSkill) => void;
+  onError?: (error: Error) => void;
+}> = ({ content, onParsed, onError }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width } = entry.contentRect;
+        setContainerWidth(width);
+      }
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        height: '100%',
+        width: '100%',
+        border: '2px dashed rgba(100, 100, 255, 0.3)',
+        boxSizing: 'border-box',
+      }}
+    >
+      {containerWidth !== undefined && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            padding: '4px 8px',
+            background: 'rgba(100, 100, 255, 0.1)',
+            border: '1px solid rgba(100, 100, 255, 0.3)',
+            borderRadius: '4px',
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            color: defaultTheme.colors.text,
+            zIndex: 1000,
+          }}
+        >
+          Parent width: {containerWidth}px
+        </div>
+      )}
+      <SkillMarkdown
+        content={content}
+        theme={defaultTheme}
+        containerWidth={containerWidth}
+        onParsed={onParsed}
+        onError={onError}
+      />
+    </div>
+  );
+};
+
+/**
+ * Parent component with ResizeObserver passing width to SkillMarkdown
+ */
+export const WithParentResizeObserver: Story = {
+  render: (args) => (
+    <ThemeProvider theme={defaultTheme}>
+      <div style={{ height: '100vh', width: '100%' }}>
+        <SkillMarkdownWithResizeObserver
+          content={args.content}
+          onParsed={args.onParsed}
+          onError={args.onError}
+        />
+      </div>
+    </ThemeProvider>
+  ),
+  args: {
+    content: basicSkillContent,
+    onParsed: fn(),
+    onError: fn(),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the optimal pattern: parent component uses ResizeObserver to measure its width and passes it to SkillMarkdown via containerWidth prop. This avoids duplicate ResizeObservers (one in parent, one in IndustryMarkdownSlide). The dashed border shows the parent container, and the label shows the measured width being passed down.',
       },
     },
   },

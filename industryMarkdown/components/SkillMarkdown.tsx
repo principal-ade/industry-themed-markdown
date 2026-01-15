@@ -3,8 +3,6 @@
  * Parses frontmatter and renders skill metadata with markdown body
  */
 
-import React from 'react';
-import { IndustryMarkdownSlide } from './IndustryMarkdownSlide';
 import { Theme } from '@principal-ade/industry-theme';
 import {
   parseSkillMarkdown,
@@ -13,6 +11,9 @@ import {
   SkillParseError,
   SkillValidationError,
 } from '@principal-ade/markdown-utils';
+import React from 'react';
+
+import { IndustryMarkdownSlide } from './IndustryMarkdownSlide';
 
 export interface SkillMarkdownProps {
   /** Raw SKILL.md content with frontmatter */
@@ -27,6 +28,8 @@ export interface SkillMarkdownProps {
   onError?: (error: Error) => void;
   /** Show raw content on parse error instead of error message */
   showRawOnError?: boolean;
+  /** Container width to pass to IndustryMarkdownSlide (skips ResizeObserver if provided) */
+  containerWidth?: number;
 }
 
 /**
@@ -146,6 +149,7 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
   onParsed,
   onError,
   showRawOnError = false,
+  containerWidth,
 }) => {
   const [parsed, setParsed] = React.useState<ParsedSkill | null>(null);
   const [error, setError] = React.useState<Error | null>(null);
@@ -195,6 +199,7 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
               slideIdPrefix="skill-fallback"
               slideIndex={0}
               isVisible={true}
+              containerWidth={containerWidth}
             />
           </div>
         </div>
@@ -302,6 +307,7 @@ export const SkillMarkdown: React.FC<SkillMarkdownProps> = ({
               slideIdPrefix="skill-body"
               slideIndex={0}
               isVisible={true}
+              containerWidth={containerWidth}
             />
           </div>
           {(parsed.metadata.compatibility ||
