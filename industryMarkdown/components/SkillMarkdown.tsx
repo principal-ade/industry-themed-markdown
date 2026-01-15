@@ -80,6 +80,7 @@ const SkillMetadataSection: React.FC<{ metadata: SkillMetadata; theme: Theme }> 
               fontWeight: 700,
               margin: 0,
               color: theme.colors.text,
+              fontFamily: theme.fonts.heading,
             }}
           >
             {metadata.name}
@@ -121,6 +122,7 @@ const SkillMetadataSection: React.FC<{ metadata: SkillMetadata; theme: Theme }> 
             color: theme.colors.textSecondary,
             margin: 0,
             lineHeight: 1.5,
+            fontFamily: theme.fonts.body,
           }}
         >
           {metadata.description}
