@@ -26,6 +26,7 @@ export interface SlidePresentationBookProps {
   isPopout?: boolean;
   containerHeight?: string;
   viewMode?: 'single' | 'book';
+  width?: number; // Optional width in pixels for responsive containers
 
   // TOC options
   tocDisplayMode?: 'overlay' | 'sidebar';
@@ -79,6 +80,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
   fontSizeScale,
   theme,
   repositoryInfo,
+  width, // Reserved for future responsive layout enhancements
 }) => {
   // Detect if we're on a mobile device
   const [isMobile, setIsMobile] = useState(false);
@@ -598,6 +600,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                       fontSizeScale={fontSizeScale}
                       searchQuery={showSearch ? searchQuery : undefined}
                       repositoryInfo={repositoryInfo}
+                      containerWidth={width}
                     />
                   ) : (
                     <div
@@ -766,6 +769,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                       fontSizeScale={fontSizeScale}
                       searchQuery={showSearch ? searchQuery : undefined}
                       repositoryInfo={repositoryInfo}
+                      containerWidth={width}
                     />
                   ) : (
                     <div
@@ -1022,6 +1026,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                             fontSizeScale={fontSizeScale}
                             searchQuery={showSearch ? searchQuery : undefined}
                             repositoryInfo={repositoryInfo}
+                      containerWidth={width}
                             transparentBackground={true}
                             additionalPadding={{
                               left: `${theme.space[4]}px`,
@@ -1075,6 +1080,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                               fontSizeScale={fontSizeScale}
                               searchQuery={showSearch ? searchQuery : undefined}
                               repositoryInfo={repositoryInfo}
+                      containerWidth={width}
                               transparentBackground={true}
                               additionalPadding={{
                                 left: `${theme.space[2]}px`,
@@ -1165,6 +1171,7 @@ export const SlidePresentationBook: React.FC<SlidePresentationBookProps> = ({
                         fontSizeScale={fontSizeScale}
                         searchQuery={showSearch ? searchQuery : undefined}
                         repositoryInfo={repositoryInfo}
+                      containerWidth={width}
                         transparentBackground={false}
                         disableScroll={false}
                       />
