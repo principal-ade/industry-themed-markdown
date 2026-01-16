@@ -16,6 +16,7 @@ export interface DocumentViewProps {
 
   // Layout options
   maxWidth?: string | number;
+  width?: number; // Optional width in pixels for responsive containers
 
   // IndustryMarkdownSlide props pass-through
   slideIdPrefix?: string;
@@ -41,6 +42,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
   content,
   onCheckboxChange,
   maxWidth = '900px',
+  width, // Reserved for future responsive layout enhancements
   slideIdPrefix = 'document',
   enableHtmlPopout = true,
   enableKeyboardScrolling = true,
@@ -90,6 +92,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           repositoryInfo={repositoryInfo}
           transparentBackground={transparentBackground}
           editable={editable}
+          containerWidth={width}
         />
       </div>
     </div>
