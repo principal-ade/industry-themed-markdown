@@ -1,6 +1,6 @@
 {
   "name": "themed-markdown",
-  "version": "0.1.82",
+  "version": "0.1.83",
   "description": "Industry-themed markdown renderer with presentation capabilities",
   "type": "module",
   "main": "dist/index.mjs",
