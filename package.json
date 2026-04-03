@@ -1,6 +1,6 @@
 {
   "name": "themed-markdown",
-  "version": "0.1.83",
+  "version": "0.1.84",
   "description": "Industry-themed markdown renderer with presentation capabilities",
   "type": "module",
   "main": "dist/index.mjs",
@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "bun run clean && bun run build:esm && bun run build:types && bun run copy:css",
-    "build:esm": "bun build ./index.ts --outdir ./dist --format esm --target browser --external react --external react-dom --external react-markdown --external lucide-react --external react-zoom-pan-pinch --external remark-gfm --external rehype-raw --external rehype-highlight --external rehype-sanitize --external rehype-slug --external hast-util-sanitize --external highlight.js && mv ./dist/index.js ./dist/index.mjs",
+    "build:esm": "bun build ./index.ts --outdir ./dist --format esm --target browser --external react --external react-dom --external react-markdown --external lucide-react --external react-zoom-pan-pinch --external remark-gfm --external rehype-raw --external rehype-highlight --external rehype-sanitize --external rehype-slug --external hast-util-sanitize --external highlight.js --external @principal-ade/panels --external react-resizable-panels && mv ./dist/index.js ./dist/index.mjs",
     "build:types": "tsc --emitDeclarationOnly --declaration --declarationMap",
     "copy:css": "cp node_modules/highlight.js/styles/atom-one-dark.css ./dist/index.css && cat node_modules/@principal-ade/panels/dist/index.css >> ./dist/index.css",
     "dev": "bun run build --watch",
