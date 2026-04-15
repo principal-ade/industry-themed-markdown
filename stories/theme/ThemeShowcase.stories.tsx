@@ -2,7 +2,6 @@ import {
   Theme,
   ThemeProvider,
   ThemeShowcase,
-  glassmorphismTheme,
   matrixMinimalTheme,
   matrixTheme,
   regalTheme,
@@ -15,7 +14,7 @@ import React, { useState } from 'react';
 // Interactive theme editor demo
 const InteractiveThemeEditor = () => {
   const [selectedTheme, setSelectedTheme] = useState<
-    'terminal' | 'regal' | 'glassmorphism' | 'slate' | 'matrix' | 'matrixMinimal'
+    'terminal' | 'regal' | 'slate' | 'matrix' | 'matrixMinimal'
   >('slate');
   const [showValues, setShowValues] = useState(true);
   const [sections, setSections] = useState<
@@ -25,7 +24,6 @@ const InteractiveThemeEditor = () => {
   const themes = {
     terminal: terminalTheme,
     regal: regalTheme,
-    glassmorphism: glassmorphismTheme,
     slate: slateTheme,
     matrix: matrixTheme,
     matrixMinimal: matrixMinimalTheme,
@@ -67,7 +65,6 @@ const InteractiveThemeEditor = () => {
                   e.target.value as
                     | 'terminal'
                     | 'regal'
-                    | 'glassmorphism'
                     | 'slate'
                     | 'matrix'
                     | 'matrixMinimal',
@@ -85,7 +82,6 @@ const InteractiveThemeEditor = () => {
               <option value="slate">Slate (New)</option>
               <option value="terminal">Terminal</option>
               <option value="regal">Regal</option>
-              <option value="glassmorphism">Glassmorphism</option>
               <option value="matrix">Matrix</option>
               <option value="matrixMinimal">Matrix Minimal</option>
             </select>
@@ -174,10 +170,6 @@ export const Terminal: Story = {
 
 export const Regal: Story = {
   render: () => <ThemedShowcase theme={regalTheme} title="Regal Theme Showcase" />,
-};
-
-export const Glassmorphism: Story = {
-  render: () => <ThemedShowcase theme={glassmorphismTheme} title="Glassmorphism Theme Showcase" />,
 };
 
 export const Slate: Story = {

@@ -10,6 +10,7 @@ Industry-themed markdown renderer with presentation capabilities.
 - 🌓 Dark/light theme support
 - 📱 Responsive design
 - ⚡ Built with React and TypeScript
+- 🌐 **Web-only** (see [React Native Compatibility](#react-native-compatibility))
 
 ## Installation
 
@@ -50,6 +51,17 @@ Content for the second slide
   );
 }
 ```
+
+## React Native Compatibility
+
+⚠️ **This library is currently web-only and not compatible with React Native.**
+
+It has a hard dependency on `react-dom` which is not available in React Native environments. Attempting to use it in a React Native project will result in dependency conflicts and runtime errors.
+
+**For React Native projects**, consider:
+- Using WebView to render pre-rendered HTML from this library
+- Using pure React Native markdown libraries (with limitations)
+- See [REACT_NATIVE_COMPATIBILITY.md](./REACT_NATIVE_COMPATIBILITY.md) for detailed analysis and alternatives
 
 ## Development
 

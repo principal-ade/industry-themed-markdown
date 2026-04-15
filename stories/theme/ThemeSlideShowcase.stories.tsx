@@ -2,7 +2,6 @@ import {
   ThemeProvider,
   terminalTheme,
   regalTheme,
-  glassmorphismTheme,
 } from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
@@ -101,20 +100,6 @@ const RegalSlides = () => (
   </div>
 );
 
-// Glassmorphism theme slides - showing limitations without custom CSS
-const GlassmorphismSlides = () => (
-  <div
-    style={{
-      width: '100%',
-      height: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    }}
-  >
-    <ThemeProvider theme={glassmorphismTheme}>
-      <SlidePresentation slides={slides} containerHeight="100%" theme={glassmorphismTheme} />
-    </ThemeProvider>
-  </div>
-);
 
 // Storybook meta
 const meta: Meta = {
@@ -133,16 +118,4 @@ export const Terminal: Story = {
 
 export const Regal: Story = {
   render: () => <RegalSlides />,
-};
-
-export const Glassmorphism: Story = {
-  render: () => <GlassmorphismSlides />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Note: Full glassmorphism effects (backdrop-filter) require CSS properties not available in theme objects alone. This shows the color transparency aspects only.',
-      },
-    },
-  },
 };
