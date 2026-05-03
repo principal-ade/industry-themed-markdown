@@ -113,9 +113,52 @@ What we'd build on the consumer side once that's available:
 
 ## Status
 
-Design only — no implementation here yet. Once a release with this surface is published, the consumer will:
+**Shipped in `themed-markdown@0.1.87`.**
 
-1. Bump the `industry-themed-markdown` dep in `desktop-app/electron-app`.
-2. Build `MarkdownNoteIndicator` + a selection pill mirroring the snippet UX.
-3. Reuse `<SnippetNotePanel>` for the side panel (rename to a neutral `<NotePanel>` if it works for both surfaces).
-4. Wire it into `SequenceMarkdownOverlay` with the same toggle-on-click semantics.
+### What landed
+
+`IndustryMarkdownSlide` now accepts:
+
+```ts
+annotations?: Annotation[];           // [{ id, anchor, count?, metadata? }]
+activeAnnotationId?: string | null;
+renderAnnotation?: (a: Annotation) => ReactNode;          // optional inline pill
+onAnnotationClick?: (id: string, e: MouseEvent) => void;  // click-on-highlight
+onSelectionChange?: (s: AnnotationSelection | null) => void;
+annotationStyle?: { backgroundColor?, activeBackgroundColor? };
+```
+
+Anchor model is the W3C text-quote selector exactly as proposed:
+
+```ts
+interface TextQuoteAnchor { exact: string; prefix?: string; suffix?: string }
+```
+
+Implementation:
+
+- DOM-marker strategy (not CSS Custom Highlight). The hook walks the rendered text in `useLayoutEffect`, resolves `prefix + exact + suffix`, wraps the matched range in `<span class="industry-md-annotation" data-annotation-id="…">`, and inserts an indicator host span at the end. Markers are reapplied on every commit if React tears them out.
+- Highlight styling exposes four CSS variables for theming (`--industry-md-annotation-bg`, `--industry-md-annotation-active-bg`, `--industry-md-annotation-badge-bg`, `--industry-md-annotation-badge-color`, `--industry-md-annotation-badge-ring`) with sensible amber defaults; the `annotationStyle` prop is a typed shortcut for the two background vars.
+- `Annotation.count` (top-level, optional) renders as a small rounded-square badge in the top-right corner of the highlight via CSS `::after`. No JS positioning.
+- `onAnnotationClick` is wired via event delegation on the slide root; clicks at the end of a drag-selection are filtered out so highlighting text doesn't toggle anything.
+- `onSelectionChange` fires on `mouseup` / `keyup` (not `selectionchange`) so it doesn't re-render the slide mid-drag and tear the live selection.
+- Orphan anchors are silently dropped (`resolved: false` in the returned mounts) — the bail-out logic only requires markers for annotations that resolved last time, so unresolvable anchors don't loop.
+
+### Decisions vs. the open questions
+
+1. **Multiple ranges per quote.** First match wins; subsequent occurrences are ignored. No `position` selector yet.
+2. **Annotations spanning block boundaries.** Supported — `wrapRange` produces one `<span>` per text node in the range; `box-decoration-break: clone` keeps padding/radius natural across line wraps. The badge attaches to the last marker only.
+3. **Re-anchoring on content change.** On any change to `annotations` or markdown content, the hook re-walks; unresolved anchors are silently dropped.
+4. **Read-only vs. authoring.** Read-only as designed. Notes registry stays consumer-side.
+
+### Consumer-side notes
+
+Memo defeats from inline callbacks were the main hazard during development. The library is `React.memo`'d, so consumers should pass stable `renderAnnotation`, `onAnnotationClick`, `onSelectionChange`, and `annotations` (use `useCallback` / `useMemo`) — otherwise the slide re-renders on every parent state change and the live text selection gets torn during drag.
+
+The "draft annotation" pattern (push a placeholder annotation while the composer is open, set `activeAnnotationId` to its id) is what keeps the highlight visible while the user is authoring — no separate "pending selection" prop needed.
+
+### Consumer integration steps (unchanged)
+
+1. Bump the `themed-markdown` dep in `desktop-app/electron-app` to `^0.1.87`.
+2. Build the selection pill mirroring the snippet UX (no inline indicator needed unless desired — `onAnnotationClick` is enough).
+3. Reuse `<SnippetNotePanel>` for the side panel.
+4. Wire it into `SequenceMarkdownOverlay` with toggle-on-click semantics; pass `annotations`, `activeAnnotationId`, `onAnnotationClick`, `onSelectionChange`, and (for the in-progress note) a draft annotation entry.
