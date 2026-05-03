@@ -76,6 +76,13 @@ export type {
   CodeChunk,
 } from './industryMarkdown/types/customMarkdownChunks';
 
+export type {
+  Annotation,
+  TextQuoteAnchor,
+  AnnotationSelection,
+  ResolvedAnnotation,
+} from './industryMarkdown/types/annotations';
+
 // Theme system
 export type { Theme } from '@principal-ade/industry-theme';
 export { theme as defaultTheme } from '@principal-ade/industry-theme';

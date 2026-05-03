@@ -67,6 +67,7 @@ import {
 } from '@principal-ade/markdown-utils';
 import { defaultSchema } from 'hast-util-sanitize';
 import React, { useRef, useEffect, useLayoutEffect, useState, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
@@ -74,9 +75,11 @@ import rehypeSanitize from 'rehype-sanitize';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 
+import type { Annotation, AnnotationSelection } from '../types/annotations';
 import { KeyboardBinding } from '../types/keyboard';
 import { highlightSearchMatches } from '../utils/highlightSearchMatches';
 import { parseMarkdownChunks } from '../utils/markdownUtils';
+import { useAnnotations } from '../utils/useAnnotations';
 
 import { IndustryHtmlModal, useIndustryHtmlModal } from './IndustryHtmlModal';
 import { IndustryLazyMermaidDiagram } from './IndustryLazyMermaidDiagram';
@@ -131,6 +134,22 @@ export interface IndustryMarkdownSlideProps {
 
   // === Editing ===
   editable?: boolean; // When true, checkboxes are interactive. Default: false
+
+  // === Annotations ===
+  annotations?: Annotation[];
+  activeAnnotationId?: string | null;
+  renderAnnotation?: (annotation: Annotation) => React.ReactNode;
+  onSelectionChange?: (selection: AnnotationSelection | null) => void;
+  onAnnotationClick?: (annotationId: string, event: MouseEvent) => void;
+  /**
+   * Color overrides for annotation highlights. Each field is any valid CSS
+   * color (hex, rgba, var(...), etc.). Omit a field to keep the default
+   * amber palette.
+   */
+  annotationStyle?: {
+    backgroundColor?: string;
+    activeBackgroundColor?: string;
+  };
 }
 
 // Override highlight.js token background colors and ensure proper text colors
@@ -296,6 +315,59 @@ const highlightOverrides = `
   }
 `;
 
+// Default annotation marker styling. Consumers can override via the
+// `annotationStyle` prop (which sets CSS variables on the slide root) or by
+// writing CSS that targets `.industry-md-annotation` /
+// `.industry-md-annotation[data-active="true"]`.
+const annotationCSS = `
+  .industry-md-annotation {
+    background-color: var(--industry-md-annotation-bg, rgba(255, 193, 7, 0.22));
+    padding: 0.15em 0.25em;
+    margin: 0 -0.05em;
+    border-radius: 3px;
+    cursor: pointer;
+    /* Re-apply padding/radius on each line fragment when the highlight wraps. */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .industry-md-annotation[data-active="true"] {
+    background-color: var(
+      --industry-md-annotation-active-bg,
+      rgba(255, 193, 7, 0.5)
+    );
+  }
+  .industry-md-annotation--last {
+    position: relative;
+  }
+  .industry-md-annotation--last[data-count]::after {
+    content: attr(data-count);
+    position: absolute;
+    top: -0.85em;
+    right: -0.8em;
+    min-width: 1.1em;
+    height: 1.1em;
+    padding: 0 0.3em;
+    box-sizing: border-box;
+    border-radius: 4px;
+    background-color: var(
+      --industry-md-annotation-badge-bg,
+      rgba(180, 120, 0, 0.95)
+    );
+    color: var(--industry-md-annotation-badge-color, #fff);
+    font-size: 0.65em;
+    font-weight: 600;
+    line-height: 1.1em;
+    text-align: center;
+    pointer-events: none;
+    box-shadow: 0 0 0 1.5px var(--industry-md-annotation-badge-ring, #fff);
+  }
+  .industry-md-annotation-indicator {
+    display: inline;
+    margin-left: 0.25em;
+    vertical-align: baseline;
+  }
+`;
+
 // CSS for smooth font size transitions and first-child heading adjustments
 const fontTransitionCSS = `
   .markdown-slide * {
@@ -357,6 +429,13 @@ const injectStyles = () => {
       transitionStyle.id = 'markdown-slide-font-transitions';
       transitionStyle.textContent = fontTransitionCSS;
       document.head.appendChild(transitionStyle);
+    }
+
+    if (!document.getElementById('markdown-slide-annotations')) {
+      const annotationStyle = document.createElement('style');
+      annotationStyle.id = 'markdown-slide-annotations';
+      annotationStyle.textContent = annotationCSS;
+      document.head.appendChild(annotationStyle);
     }
 
     stylesInjected = true;
@@ -486,6 +565,14 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
 
   // === Editing ===
   editable = false,
+
+  // === Annotations ===
+  annotations,
+  activeAnnotationId,
+  renderAnnotation,
+  onSelectionChange,
+  onAnnotationClick,
+  annotationStyle,
 }: IndustryMarkdownSlideProps) {
   const slideRef = useRef<HTMLDivElement>(null);
   const scrollPositionsRef = useRef<Map<number, number>>(new Map());
@@ -493,19 +580,17 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   // State for measured container width when containerWidth prop is not provided
   const [measuredContainerWidth, setMeasuredContainerWidth] = useState<number | null>(null);
 
-  // Add error handling for content parsing
-  let chunks: ReturnType<typeof parseMarkdownChunks> = [];
-  try {
-    // Ensure content is a valid string before parsing
-    if (typeof content === 'string') {
-      chunks = parseMarkdownChunks(content, slideIdPrefix);
-    } else {
-      // Use empty array as fallback
+  // Memoize so ReactMarkdown isn't re-rendered on unrelated state changes
+  // (e.g. annotation mounts) — needed to keep injected marker spans intact.
+  const chunks = useMemo<ReturnType<typeof parseMarkdownChunks>>(() => {
+    if (typeof content !== 'string') return [];
+    try {
+      return parseMarkdownChunks(content, slideIdPrefix);
+    } catch (error) {
+      console.error('Error parsing markdown chunks:', error);
+      return [];
     }
-  } catch (error) {
-    console.error('Error parsing markdown chunks:', error);
-    // Use empty array as fallback
-  }
+  }, [content, slideIdPrefix]);
 
   // Keep track of checked state locally
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
@@ -1020,6 +1105,93 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     ],
   );
 
+  // Memoize the rendered chunks so that annotation-related state changes
+  // (which re-render IndustryMarkdownSlide) don't cause ReactMarkdown to
+  // reconcile and tear out the marker spans we inject post-render.
+  const renderedChunks = useMemo(() => {
+    if (chunks.length === 0) {
+      return (
+        <div
+          style={{
+            padding: theme.space[4],
+            textAlign: 'center',
+            color: theme.colors.muted,
+            fontSize: theme.fontSizes[2],
+          }}
+        >
+          No content to display
+        </div>
+      );
+    }
+    return chunks.map((chunk, index) => {
+      if (chunk.type === 'markdown_chunk') {
+        const processedContent = searchQuery
+          ? highlightSearchMatches(chunk.content, searchQuery)
+          : chunk.content;
+        return (
+          <ReactMarkdown
+            key={`${chunk.id}-${JSON.stringify(theme.colors.accent)}`}
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[
+              rehypeRaw,
+              [rehypeSanitize, sanitizeSchema],
+              rehypeSlug,
+              rehypeHighlight,
+            ]}
+            components={getMarkdownComponents(index)}
+          >
+            {processedContent}
+          </ReactMarkdown>
+        );
+      }
+      if (chunk.type === 'mermaid_chunk') {
+        const mermaidProps: React.ComponentProps<typeof IndustryLazyMermaidDiagram> = {
+          id: chunk.id,
+          code: chunk.content,
+          onCopyError: onCopyMermaidError,
+          rootMargin: rootMargin,
+          theme: theme,
+          onExpandClick: () => openMermaidModal(chunk.content),
+        };
+        if (onShowMermaidInPanel) {
+          mermaidProps.onShowInPanel = onShowMermaidInPanel;
+        }
+        return <IndustryLazyMermaidDiagram key={chunk.id} {...mermaidProps} />;
+      }
+      return null;
+    });
+  }, [
+    chunks,
+    content,
+    searchQuery,
+    theme,
+    sanitizeSchema,
+    getMarkdownComponents,
+    rootMargin,
+    onCopyMermaidError,
+    onShowMermaidInPanel,
+  ]);
+
+  // Annotations: walk the rendered DOM and wrap matched ranges so consumers
+  // can attach indicators / highlights to specific spans of text.
+  const annotationMounts = useAnnotations({
+    rootRef: slideRef,
+    annotations: annotations ?? [],
+    activeAnnotationId,
+    onSelectionChange,
+    onAnnotationClick,
+  });
+
+  const annotationCSSVars: React.CSSProperties = {};
+  if (annotationStyle?.backgroundColor) {
+    (annotationCSSVars as Record<string, string>)['--industry-md-annotation-bg'] =
+      annotationStyle.backgroundColor;
+  }
+  if (annotationStyle?.activeBackgroundColor) {
+    (annotationCSSVars as Record<string, string>)['--industry-md-annotation-active-bg'] =
+      annotationStyle.activeBackgroundColor;
+  }
+
   return (
     <div
       className="markdown-slide"
@@ -1039,6 +1211,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         transition: 'border-color 0.2s ease',
         // Include padding and border in the element's total height
         boxSizing: 'border-box',
+        ...annotationCSSVars,
       }}
       tabIndex={0}
       onKeyDown={handleKeyDown}
@@ -1048,61 +1221,20 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         }
       }}
     >
-      {chunks.length === 0 ? (
-        <div
-          style={{
-            padding: theme.space[4],
-            textAlign: 'center',
-            color: theme.colors.muted,
-            fontSize: theme.fontSizes[2],
-          }}
-        >
-          No content to display
-        </div>
-      ) : (
-        chunks.map((chunk, index) => {
-          if (chunk.type === 'markdown_chunk') {
-            // Apply search highlighting if a search query is present
-            const processedContent = searchQuery
-              ? highlightSearchMatches(chunk.content, searchQuery)
-              : chunk.content;
+      {renderedChunks}
 
-            return (
-              <ReactMarkdown
-                key={`${chunk.id}-${JSON.stringify(theme.colors.accent)}`}
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[
-                  rehypeRaw,
-                  [rehypeSanitize, sanitizeSchema],
-                  rehypeSlug,
-                  rehypeHighlight,
-                ]}
-                components={getMarkdownComponents(index)}
-              >
-                {processedContent}
-              </ReactMarkdown>
-            );
-          }
-          if (chunk.type === 'mermaid_chunk') {
-            const mermaidProps: React.ComponentProps<typeof IndustryLazyMermaidDiagram> = {
-              id: chunk.id,
-              code: chunk.content,
-              onCopyError: onCopyMermaidError,
-              rootMargin: rootMargin,
-              theme: theme,
-              onExpandClick: () => openMermaidModal(chunk.content),
-            };
-
-            // Only add onShowInPanel if onShowMermaidInPanel is provided
-            if (onShowMermaidInPanel) {
-              mermaidProps.onShowInPanel = onShowMermaidInPanel;
-            }
-
-            return <IndustryLazyMermaidDiagram key={chunk.id} {...mermaidProps} />;
-          }
-          return null;
-        })
-      )}
+      {/* Annotation indicators — portaled into the marker hosts the hook injected. */}
+      {renderAnnotation &&
+        annotationMounts
+          .filter(mount => mount.resolved)
+          .map(mount =>
+            createPortal(
+              <React.Fragment key={mount.annotation.id}>
+                {renderAnnotation(mount.annotation)}
+              </React.Fragment>,
+              mount.host,
+            ),
+          )}
 
       {/* HTML Modal */}
       <IndustryHtmlModal

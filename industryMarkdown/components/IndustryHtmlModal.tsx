@@ -1,5 +1,5 @@
 import { Theme } from '@principal-ade/industry-theme';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 export interface IndustryHtmlModalProps {
   isOpen: boolean;
@@ -12,14 +12,14 @@ export const useIndustryHtmlModal = () => {
   const [htmlModalOpen, setHtmlModalOpen] = useState(false);
   const [htmlModalContent, setHtmlModalContent] = useState('');
 
-  const openHtmlModal = (content: string) => {
+  const openHtmlModal = useCallback((content: string) => {
     setHtmlModalContent(content);
     setHtmlModalOpen(true);
-  };
+  }, []);
 
-  const closeHtmlModal = () => {
+  const closeHtmlModal = useCallback(() => {
     setHtmlModalOpen(false);
-  };
+  }, []);
 
   return { htmlModalOpen, htmlModalContent, openHtmlModal, closeHtmlModal };
 };
