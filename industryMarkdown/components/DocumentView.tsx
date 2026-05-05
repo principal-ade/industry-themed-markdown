@@ -6,6 +6,8 @@ import {
 } from '@principal-ade/markdown-utils';
 import React, { useRef } from 'react';
 
+import type { Annotation, AnnotationSelection } from '../types/annotations';
+
 import { IndustryMarkdownSlide } from './IndustryMarkdownSlide';
 
 export interface DocumentViewProps {
@@ -36,6 +38,17 @@ export interface DocumentViewProps {
 
   // Editing
   editable?: boolean; // When true, checkboxes are interactive. Default: false
+
+  // Annotations
+  annotations?: Annotation[];
+  activeAnnotationId?: string | null;
+  renderAnnotation?: (annotation: Annotation) => React.ReactNode;
+  onSelectionChange?: (selection: AnnotationSelection | null) => void;
+  onAnnotationClick?: (annotationId: string, event: MouseEvent) => void;
+  annotationStyle?: {
+    backgroundColor?: string;
+    activeBackgroundColor?: string;
+  };
 }
 
 export const DocumentView: React.FC<DocumentViewProps> = ({
@@ -55,6 +68,12 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
   theme,
   transparentBackground = false,
   editable = false,
+  annotations,
+  activeAnnotationId,
+  renderAnnotation,
+  onSelectionChange,
+  onAnnotationClick,
+  annotationStyle,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const backgroundColor = transparentBackground ? 'transparent' : theme.colors.background;
@@ -93,6 +112,12 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           transparentBackground={transparentBackground}
           editable={editable}
           containerWidth={width}
+          annotations={annotations}
+          activeAnnotationId={activeAnnotationId}
+          renderAnnotation={renderAnnotation}
+          onSelectionChange={onSelectionChange}
+          onAnnotationClick={onAnnotationClick}
+          annotationStyle={annotationStyle}
         />
       </div>
     </div>
