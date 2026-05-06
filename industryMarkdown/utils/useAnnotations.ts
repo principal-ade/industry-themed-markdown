@@ -4,8 +4,91 @@ import type { Annotation, AnnotationSelection, TextQuoteAnchor } from '../types/
 
 import { resolveTextQuote, selectionToAnchor } from './annotationResolver';
 
-const MARKER_CLASS = 'industry-md-annotation';
 const INDICATOR_HOST_CLASS = 'industry-md-annotation-indicator';
+const HIGHLIGHT_NAME = 'industry-md-annotation';
+const HIGHLIGHT_ACTIVE_NAME = 'industry-md-annotation-active';
+const HIGHLIGHT_HOVER_NAME = 'industry-md-annotation-hover';
+
+// Painting highlights via the CSS Custom Highlight API instead of wrapping
+// text nodes in `<span>`s avoids the cross-block crash documented in
+// `backlog/tasks/4 - Inline annotations crash on cross-block ranges.md`:
+// reparenting React-owned text nodes invalidates fiber references and the
+// next commit throws `NotFoundError` on `parent.insertBefore`. Highlights
+// are paint-only, so React's tree is untouched.
+//
+// Lib.dom.d.ts ships incomplete typings for the Set-like `Highlight` and
+// the Map-like `HighlightRegistry` (the IDL setlike/maplike members aren't
+// always materialized). Re-declare just the methods we use.
+interface HighlightLike {
+  add(range: Range): HighlightLike;
+  delete(range: Range): boolean;
+}
+interface HighlightRegistryLike {
+  get(name: string): HighlightLike | undefined;
+  set(name: string, value: HighlightLike): HighlightRegistryLike;
+}
+interface HighlightCtor {
+  new (...ranges: Range[]): HighlightLike;
+}
+
+interface HighlightApi {
+  base: HighlightLike;
+  active: HighlightLike;
+  hover: HighlightLike;
+}
+
+function getHighlightApi(): HighlightApi | null {
+  if (typeof CSS === 'undefined' || !('highlights' in CSS)) return null;
+  const HighlightCtor = (globalThis as unknown as { Highlight?: HighlightCtor }).Highlight;
+  if (!HighlightCtor) return null;
+  const registry = (CSS as unknown as { highlights: HighlightRegistryLike }).highlights;
+  const ensure = (name: string): HighlightLike => {
+    let h = registry.get(name);
+    if (!h) {
+      h = new HighlightCtor();
+      registry.set(name, h);
+    }
+    return h;
+  };
+  return {
+    base: ensure(HIGHLIGHT_NAME),
+    active: ensure(HIGHLIGHT_ACTIVE_NAME),
+    hover: ensure(HIGHLIGHT_HOVER_NAME),
+  };
+}
+
+const OVERLAY_CLASS = 'industry-md-annotation-overlay';
+
+function getOrCreateOverlay(root: HTMLElement): HTMLElement {
+  let overlay = root.querySelector<HTMLElement>(`:scope > .${OVERLAY_CLASS}`);
+  if (overlay) return overlay;
+  overlay = document.createElement('div');
+  overlay.className = OVERLAY_CLASS;
+  overlay.style.cssText =
+    'position:absolute;inset:0;pointer-events:none;z-index:1;';
+  root.appendChild(overlay);
+  return overlay;
+}
+
+function clearHosts(root: HTMLElement) {
+  const overlay = root.querySelector<HTMLElement>(`:scope > .${OVERLAY_CLASS}`);
+  if (overlay) overlay.replaceChildren();
+}
+
+function positionHost(host: HTMLElement, range: Range, root: HTMLElement) {
+  const rects = range.getClientRects();
+  if (rects.length === 0) {
+    host.style.display = 'none';
+    return;
+  }
+  const last = rects[rects.length - 1];
+  const rootRect = root.getBoundingClientRect();
+  const top = last.top - rootRect.top + root.scrollTop;
+  const left = last.right - rootRect.left + root.scrollLeft;
+  host.style.cssText =
+    `position:absolute;top:${top}px;left:${left}px;` +
+    `pointer-events:auto;line-height:${last.height}px;`;
+}
 
 function annotationsSignature<T>(annotations: Annotation<T>[]): string {
   return annotations
@@ -30,62 +113,10 @@ export interface AnnotationMount<TMetadata> {
   resolved: boolean;
 }
 
-function clearMarkers(root: HTMLElement) {
-  const markers = root.querySelectorAll<HTMLElement>(`.${MARKER_CLASS}`);
-  markers.forEach(marker => {
-    const parent = marker.parentNode;
-    if (!parent) return;
-    while (marker.firstChild) {
-      parent.insertBefore(marker.firstChild, marker);
-    }
-    parent.removeChild(marker);
-  });
-  const hosts = root.querySelectorAll<HTMLElement>(`.${INDICATOR_HOST_CLASS}`);
-  hosts.forEach(host => host.parentNode?.removeChild(host));
-  // Re-merge adjacent text nodes that were split when markers were inserted.
-  root.normalize();
-}
-
-function wrapRange(range: Range, annotationId: string): HTMLElement[] {
-  // surroundContents only works when the range spans within a single text
-  // node. For cross-node ranges we walk the contained text nodes manually.
-  const textNodes: Text[] = [];
-  const walker = document.createTreeWalker(range.commonAncestorContainer, NodeFilter.SHOW_TEXT);
-  let current = walker.nextNode() as Text | null;
-  while (current) {
-    if (range.intersectsNode(current)) textNodes.push(current);
-    current = walker.nextNode() as Text | null;
-  }
-  if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
-    textNodes.push(range.commonAncestorContainer as Text);
-  }
-
-  const markers: HTMLElement[] = [];
-  textNodes.forEach(textNode => {
-    if (!textNode.parentNode || !textNode.nodeValue) return;
-    const isStart = textNode === range.startContainer;
-    const isEnd = textNode === range.endContainer;
-    const start = isStart ? range.startOffset : 0;
-    const end = isEnd ? range.endOffset : textNode.nodeValue.length;
-    if (start >= end) return;
-
-    let target = textNode;
-    if (start > 0) {
-      target = target.splitText(start);
-    }
-    if (end - start < target.nodeValue!.length) {
-      target.splitText(end - start);
-    }
-
-    const marker = document.createElement('span');
-    marker.className = MARKER_CLASS;
-    marker.setAttribute('data-annotation-id', annotationId);
-    marker.setAttribute('data-annotation-marker', 'true');
-    target.parentNode!.insertBefore(marker, target);
-    marker.appendChild(target);
-    markers.push(marker);
-  });
-  return markers;
+interface ResolvedEntry<TMetadata> {
+  annotation: Annotation<TMetadata>;
+  range: Range;
+  host: HTMLElement;
 }
 
 export function useAnnotations<TMetadata>({
@@ -99,34 +130,64 @@ export function useAnnotations<TMetadata>({
   const signature = useMemo(() => annotationsSignature(annotations ?? []), [annotations]);
   const annotationsRef = useRef(annotations);
   annotationsRef.current = annotations;
+  const activeIdRef = useRef<string | null | undefined>(activeAnnotationId);
+  activeIdRef.current = activeAnnotationId;
   const lastAppliedRef = useRef<string>('');
   const lastResolvedIdsRef = useRef<Set<string>>(new Set());
+  // Ranges this hook instance has registered with the global highlight
+  // buckets. Tracked so we can `delete` exactly our own ranges on
+  // cleanup/re-apply without disturbing other slides on the page.
+  const ownedRangesRef = useRef<Set<Range>>(new Set());
+  const resolvedRef = useRef<ResolvedEntry<TMetadata>[]>([]);
 
-  // Runs on every commit. ReactMarkdown's reconciliation can tear out our
-  // injected marker / host spans, so we re-apply whenever they're missing
-  // (or the annotations payload itself has changed). Bail-out only checks
-  // markers for annotations that *resolved* last time — unresolvable
-  // anchors stay un-resolved and shouldn't trigger an infinite re-wrap.
+  useEffect(() => {
+    return () => {
+      const api = getHighlightApi();
+      if (api) {
+        ownedRangesRef.current.forEach(r => {
+          api.base.delete(r);
+          api.active.delete(r);
+          api.hover.delete(r);
+        });
+      }
+      ownedRangesRef.current.clear();
+    };
+  }, []);
+
+  // Runs on every commit. Hosts are inserted as *siblings* of the end text
+  // node (not parents) so React's fiber tree is undisturbed; if React
+  // re-renders the surrounding subtree it may strip our hosts, so we
+  // re-apply whenever they're missing.
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     const current = annotationsRef.current ?? [];
+    const api = getHighlightApi();
 
-    const existingMarkerIds = new Set<string>();
-    root.querySelectorAll<HTMLElement>(`.${MARKER_CLASS}`).forEach(el => {
+    const existingHostIds = new Set<string>();
+    root.querySelectorAll<HTMLElement>(`.${INDICATOR_HOST_CLASS}`).forEach(el => {
       const id = el.getAttribute('data-annotation-id');
-      if (id) existingMarkerIds.add(id);
+      if (id) existingHostIds.add(id);
     });
 
     const annotationsChanged = lastAppliedRef.current !== signature;
-    const allResolvedMarkersPresent = Array.from(lastResolvedIdsRef.current).every(id =>
-      existingMarkerIds.has(id),
+    const allHostsPresent = Array.from(lastResolvedIdsRef.current).every(id =>
+      existingHostIds.has(id),
     );
-    if (!annotationsChanged && allResolvedMarkersPresent) {
+    if (!annotationsChanged && allHostsPresent) {
       return;
     }
 
-    clearMarkers(root);
+    if (api) {
+      ownedRangesRef.current.forEach(r => {
+        api.base.delete(r);
+        api.active.delete(r);
+        api.hover.delete(r);
+      });
+    }
+    ownedRangesRef.current.clear();
+    clearHosts(root);
+    resolvedRef.current = [];
     lastAppliedRef.current = signature;
 
     if (current.length === 0) {
@@ -136,54 +197,97 @@ export function useAnnotations<TMetadata>({
     }
 
     const next: AnnotationMount<TMetadata>[] = [];
+    const newResolved: ResolvedEntry<TMetadata>[] = [];
     const resolvedIds = new Set<string>();
+    const activeId = activeIdRef.current;
+
     current.forEach(annotation => {
-      const range = resolveTextQuote(root, annotation.anchor);
+      let range: Range | null = null;
+      try {
+        range = resolveTextQuote(root, annotation.anchor);
+      } catch {
+        range = null;
+      }
       if (!range) {
         next.push({ annotation, host: document.createElement('span'), resolved: false });
         return;
       }
-      const markers = wrapRange(range, annotation.id);
-      if (markers.length === 0) {
-        next.push({ annotation, host: document.createElement('span'), resolved: false });
-        return;
-      }
-      const last = markers[markers.length - 1];
-      last.classList.add(`${MARKER_CLASS}--last`);
-      if (typeof annotation.count === 'number' && annotation.count > 0) {
-        last.setAttribute('data-count', String(annotation.count));
-      }
       const host = document.createElement('span');
       host.className = INDICATOR_HOST_CLASS;
-      host.setAttribute('data-annotation-indicator-for', annotation.id);
-      last.parentNode!.insertBefore(host, last.nextSibling);
+      host.setAttribute('data-annotation-id', annotation.id);
+      if (typeof annotation.count === 'number' && annotation.count > 0) {
+        host.setAttribute('data-count', String(annotation.count));
+      }
+      if (activeId && annotation.id === activeId) {
+        host.setAttribute('data-active', 'true');
+      }
+      // Position the host absolutely within an overlay layer attached to
+      // the slide root. We never insert it next to the text — that would
+      // require splitting the end text node, which React's next render
+      // would clobber by writing the full string back to `nodeValue`. The
+      // overlay sits as a single appended child of the slide root, well
+      // after React's tracked siblings, so React's reconciliation never
+      // bumps into it.
+      const overlay = getOrCreateOverlay(root);
+      overlay.appendChild(host);
+      positionHost(host, range, root);
+
+      if (api) {
+        ownedRangesRef.current.add(range);
+        if (activeId && annotation.id === activeId) {
+          api.active.add(range);
+        } else {
+          api.base.add(range);
+        }
+      }
+
+      newResolved.push({ annotation, range, host });
       next.push({ annotation, host, resolved: true });
       resolvedIds.add(annotation.id);
     });
 
+    resolvedRef.current = newResolved;
     lastResolvedIdsRef.current = resolvedIds;
     setMounts(next);
   });
 
-  // Apply / clear active state without re-wrapping.
+  // Reposition hosts when the slide reflows (window resize, font load,
+  // content edits). Highlights are paint-only so they reflow automatically;
+  // hosts are absolute-positioned and need explicit re-layout.
   useEffect(() => {
     const root = rootRef.current;
-    if (!root) return;
-    const markers = root.querySelectorAll<HTMLElement>(`.${MARKER_CLASS}`);
-    markers.forEach(marker => {
-      const id = marker.getAttribute('data-annotation-id');
-      if (id && id === activeAnnotationId) {
-        marker.setAttribute('data-active', 'true');
+    if (!root || typeof ResizeObserver === 'undefined') return;
+    const reposition = () => {
+      resolvedRef.current.forEach(entry => positionHost(entry.host, entry.range, root));
+    };
+    const observer = new ResizeObserver(reposition);
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [rootRef, mounts]);
+
+  // Active state — move ranges between buckets and toggle host attribute.
+  useEffect(() => {
+    const api = getHighlightApi();
+    resolvedRef.current.forEach(entry => {
+      const isActive = !!activeAnnotationId && entry.annotation.id === activeAnnotationId;
+      if (api) {
+        if (isActive) {
+          api.base.delete(entry.range);
+          api.active.add(entry.range);
+        } else {
+          api.active.delete(entry.range);
+          api.base.add(entry.range);
+        }
+      }
+      if (isActive) {
+        entry.host.setAttribute('data-active', 'true');
       } else {
-        marker.removeAttribute('data-active');
+        entry.host.removeAttribute('data-active');
       }
     });
-  }, [rootRef, activeAnnotationId, mounts]);
+  }, [activeAnnotationId, mounts]);
 
-  // Selection tracking. We intentionally listen on mouseup / keyup rather
-  // than `selectionchange`: the latter fires continuously while the user is
-  // still dragging, and emitting on every fire causes the consumer's state
-  // updates to re-render the slide mid-drag and tear the selection.
+  // Selection tracking — mouseup / keyup so we don't fire mid-drag.
   useEffect(() => {
     if (!onSelectionChange) return;
     const root = rootRef.current;
@@ -208,8 +312,6 @@ export function useAnnotations<TMetadata>({
       onSelectionChange({ anchor, rect: range.getBoundingClientRect() });
     };
 
-    // Defer past the current event loop so the browser has finished
-    // updating Selection state.
     const handleMouseUp = () => {
       window.setTimeout(emit, 0);
     };
@@ -232,29 +334,83 @@ export function useAnnotations<TMetadata>({
     };
   }, [rootRef, onSelectionChange]);
 
-  // Click delegation so the highlighted span itself is the affordance — no
-  // inline indicator required. Only fires when the click was a click, not
-  // the end of a drag-selection.
+  // Click + cursor delegation. Highlights aren't DOM elements, so hit-test
+  // the resolved Range rectangles for both pointer-feedback and clicks.
+  // Host clicks (badge / portal indicator) are checked first since they're
+  // cheaper and unambiguous.
   useEffect(() => {
     if (!onAnnotationClick) return;
     const root = rootRef.current;
     if (!root) return;
 
+    const hitTest = (x: number, y: number): string | null => {
+      for (const entry of resolvedRef.current) {
+        const rects = entry.range.getClientRects();
+        for (let i = 0; i < rects.length; i++) {
+          const r = rects[i];
+          if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+            return entry.annotation.id;
+          }
+        }
+      }
+      return null;
+    };
+
     const handleClick = (event: MouseEvent) => {
       const selection = document.getSelection();
-      if (selection && !selection.isCollapsed) return; // user was selecting
+      if (selection && !selection.isCollapsed) return;
+
       const target = event.target;
-      if (!(target instanceof Element)) return;
-      const marker = target.closest(`.${MARKER_CLASS}`);
-      if (!marker) return;
-      const id = marker.getAttribute('data-annotation-id');
-      if (!id) return;
-      onAnnotationClick(id, event);
+      if (target instanceof Element) {
+        const host = target.closest(`.${INDICATOR_HOST_CLASS}`);
+        if (host) {
+          const id = host.getAttribute('data-annotation-id');
+          if (id) {
+            onAnnotationClick(id, event);
+            return;
+          }
+        }
+      }
+
+      const id = hitTest(event.clientX, event.clientY);
+      if (id) onAnnotationClick(id, event);
+    };
+
+    let hoveredId: string | null = null;
+    const setHover = (id: string | null) => {
+      if (id === hoveredId) return;
+      const api = getHighlightApi();
+      if (api) {
+        if (hoveredId) {
+          const prev = resolvedRef.current.find(e => e.annotation.id === hoveredId);
+          if (prev) api.hover.delete(prev.range);
+        }
+        if (id) {
+          const next = resolvedRef.current.find(e => e.annotation.id === id);
+          if (next) api.hover.add(next.range);
+        }
+      }
+      hoveredId = id;
+    };
+    const handleMove = (event: MouseEvent) => {
+      const id = hitTest(event.clientX, event.clientY);
+      root.style.cursor = id ? 'pointer' : '';
+      setHover(id);
+    };
+    const handleLeave = () => {
+      root.style.cursor = '';
+      setHover(null);
     };
 
     root.addEventListener('click', handleClick);
+    root.addEventListener('mousemove', handleMove);
+    root.addEventListener('mouseleave', handleLeave);
     return () => {
       root.removeEventListener('click', handleClick);
+      root.removeEventListener('mousemove', handleMove);
+      root.removeEventListener('mouseleave', handleLeave);
+      root.style.cursor = '';
+      setHover(null);
     };
   }, [rootRef, onAnnotationClick]);
 

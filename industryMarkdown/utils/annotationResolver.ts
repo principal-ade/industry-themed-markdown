@@ -5,7 +5,10 @@ interface TextIndex {
   nodes: Array<{ node: Text; start: number; end: number }>;
 }
 
-const SKIP_SELECTOR = 'script, style, code, pre';
+// Skip block code (`<pre><code>`) but keep inline `<code>` indexed so anchors
+// can include backticked terms within prose. `parent.closest("pre")` already
+// excludes the inner `<code>` of fenced blocks.
+const SKIP_SELECTOR = 'script, style, pre';
 
 function buildTextIndex(root: HTMLElement): TextIndex {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {

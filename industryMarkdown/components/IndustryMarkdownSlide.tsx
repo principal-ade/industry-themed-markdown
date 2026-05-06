@@ -315,35 +315,31 @@ const highlightOverrides = `
   }
 `;
 
-// Default annotation marker styling. Consumers can override via the
-// `annotationStyle` prop (which sets CSS variables on the slide root) or by
-// writing CSS that targets `.industry-md-annotation` /
-// `.industry-md-annotation[data-active="true"]`.
+// Default annotation styling. Highlights are painted via the CSS Custom
+// Highlight API (paint-only, no DOM mutation) so cross-block annotations
+// don't crash React's commit phase. Consumers override via the
+// `annotationStyle` prop (which sets CSS variables on the slide root) or
+// by writing CSS that targets the named highlights below.
 const annotationCSS = `
-  .industry-md-annotation {
+  ::highlight(industry-md-annotation) {
     background-color: var(--industry-md-annotation-bg, rgba(255, 193, 7, 0.22));
-    padding: 0.15em 0.25em;
-    margin: 0 -0.05em;
-    border-radius: 3px;
-    cursor: pointer;
-    /* Re-apply padding/radius on each line fragment when the highlight wraps. */
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
   }
-  .industry-md-annotation[data-active="true"] {
+  ::highlight(industry-md-annotation-active) {
     background-color: var(
       --industry-md-annotation-active-bg,
       rgba(255, 193, 7, 0.5)
     );
   }
-  .industry-md-annotation--last {
-    position: relative;
+  ::highlight(industry-md-annotation-hover) {
+    background-color: var(
+      --industry-md-annotation-hover-bg,
+      rgba(255, 193, 7, 0.18)
+    );
   }
-  .industry-md-annotation--last[data-count]::after {
+  .industry-md-annotation-indicator[data-count]::after {
     content: attr(data-count);
-    position: absolute;
-    top: -0.85em;
-    right: -0.8em;
+    display: inline-block;
+    transform: translate(2px, -50%);
     min-width: 1.1em;
     height: 1.1em;
     padding: 0 0.3em;
@@ -354,17 +350,12 @@ const annotationCSS = `
       rgba(180, 120, 0, 0.95)
     );
     color: var(--industry-md-annotation-badge-color, #fff);
-    font-size: 0.65em;
+    font-size: 11px;
     font-weight: 600;
     line-height: 1.1em;
     text-align: center;
-    pointer-events: none;
     box-shadow: 0 0 0 1.5px var(--industry-md-annotation-badge-ring, #fff);
-  }
-  .industry-md-annotation-indicator {
-    display: inline;
-    margin-left: 0.25em;
-    vertical-align: baseline;
+    cursor: pointer;
   }
 `;
 
