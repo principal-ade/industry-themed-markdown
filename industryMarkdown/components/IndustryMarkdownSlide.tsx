@@ -119,6 +119,17 @@ export interface IndustryMarkdownSlideProps {
   containerWidth?: number; // Container width passed from parent (optional - will use ResizeObserver if not provided)
   transparentBackground?: boolean; // If true, no background color is applied (useful when parent handles background)
   additionalPadding?: { left?: string; right?: string; top?: string; bottom?: string }; // Additional padding to add to calculated padding
+  /**
+   * Skip the container-width-derived base padding on one or both axes.
+   * When `true` (boolean shorthand) both axes are zeroed. `additionalPadding`
+   * is still applied on top, so the parent can layer its own padding while
+   * dropping the slide's default 3%-of-width inset.
+   *
+   * Useful when the slide is embedded in a layout that already owns
+   * horizontal alignment (e.g., aligning the rendered markdown with
+   * surrounding body copy).
+   */
+  disableBasePadding?: boolean | { horizontal?: boolean; vertical?: boolean };
   disableScroll?: boolean; // If true, removes overflow styling (useful when parent handles scrolling)
 
   // === Dynamic Padding Configuration ===
@@ -541,6 +552,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   containerWidth,
   transparentBackground = false,
   additionalPadding,
+  disableBasePadding,
   disableScroll = false,
 
   // === Dynamic Padding Configuration ===
@@ -898,9 +910,21 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     const basePadding = calculateSlidePadding.horizontal;
     const baseVerticalPadding = calculateSlidePadding.vertical;
 
-    // Parse base padding values
-    const baseHorizontalValue = parseInt(basePadding.replace('px', ''), 10);
-    const baseVerticalValue = parseInt(baseVerticalPadding.replace('px', ''), 10);
+    // Resolve which axes should drop the container-width-derived base.
+    const disableHorizontal =
+      disableBasePadding === true ||
+      (typeof disableBasePadding === 'object' && !!disableBasePadding?.horizontal);
+    const disableVertical =
+      disableBasePadding === true ||
+      (typeof disableBasePadding === 'object' && !!disableBasePadding?.vertical);
+
+    // Parse base padding values (zeroed per-axis when disabled).
+    const baseHorizontalValue = disableHorizontal
+      ? 0
+      : parseInt(basePadding.replace('px', ''), 10);
+    const baseVerticalValue = disableVertical
+      ? 0
+      : parseInt(baseVerticalPadding.replace('px', ''), 10);
 
     // Calculate additional padding values from additionalPadding prop
     const leftExtra = additionalPadding?.left
@@ -926,7 +950,12 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     const left = baseHorizontalValue + leftExtra;
 
     return `${top}px ${right}px ${bottom}px ${left}px`;
-  }, [calculateSlidePadding.horizontal, calculateSlidePadding.vertical, additionalPadding]);
+  }, [
+    calculateSlidePadding.horizontal,
+    calculateSlidePadding.vertical,
+    additionalPadding,
+    disableBasePadding,
+  ]);
 
   // Save scroll position per slide
   useEffect(() => {

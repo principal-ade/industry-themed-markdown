@@ -101,3 +101,37 @@ code.hljs {
 
 // Auto-inject on module load
 injectHighlightStyles();
+
+let isSlideResetInjected = false;
+
+/**
+ * Zero the bottom margin on the slide's last rendered child so the slide
+ * can be embedded in flow layouts without leaking the trailing paragraph
+ * (or list / heading) margin into outer spacing. Hosts that want a gap
+ * after the slide should provide it on their own container.
+ *
+ * Idempotent and SSR-safe.
+ */
+export function injectSlideResetStyles(): void {
+  if (isSlideResetInjected || typeof document === 'undefined') return;
+  if (document.getElementById('themed-markdown-slide-reset-css')) {
+    isSlideResetInjected = true;
+    return;
+  }
+
+  const css = `
+.markdown-slide > *:last-child,
+.markdown-slide > *:last-child > *:last-child {
+  margin-bottom: 0 !important;
+}
+`;
+
+  const styleElement = document.createElement('style');
+  styleElement.id = 'themed-markdown-slide-reset-css';
+  styleElement.textContent = css;
+  document.head.appendChild(styleElement);
+
+  isSlideResetInjected = true;
+}
+
+injectSlideResetStyles();
