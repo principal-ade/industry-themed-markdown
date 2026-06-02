@@ -30,7 +30,8 @@ export const LinkWithLoadingIndicator: React.FC<{
   children: React.ReactNode;
   onClick?: (href: string, event?: React.MouseEvent) => void;
   className?: string;
-}> = ({ href, children, onClick, className }) => {
+  style?: React.CSSProperties;
+}> = ({ href, children, onClick, className, style }) => {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (onClick) {
       e.preventDefault();
@@ -43,6 +44,7 @@ export const LinkWithLoadingIndicator: React.FC<{
       href={href}
       onClick={handleClick}
       className={className}
+      style={style}
       target="_blank"
       rel="noopener noreferrer"
     >

@@ -565,6 +565,7 @@ export const createIndustryMarkdownComponents = ({
         href={href || ''}
         onClick={onLinkClick ? (h, e) => onLinkClick(h, e as unknown as MouseEvent) : undefined}
         className={props.className}
+        style={{ color: theme.colors.primary, textDecoration: 'underline' }}
       >
         {children}
       </LinkWithLoadingIndicator>
