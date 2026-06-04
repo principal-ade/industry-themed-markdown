@@ -1376,6 +1376,63 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     clearBlockSelection();
   }, [blockSelection, content, chunks, onContentChange, onDeleteBlocks, clearBlockSelection]);
 
+  // Top-level key handler for the slide: when a block/text selection is
+  // resolved, Delete/Backspace removes it (mirroring the floating Delete
+  // button). Otherwise the event falls through to keyboard scrolling.
+  const handleSlideKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (
+        blockDeletionEnabled &&
+        blockSelection &&
+        (event.key === 'Delete' || event.key === 'Backspace')
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleDeleteSelection();
+        return;
+      }
+      handleKeyDown(event);
+    },
+    [blockDeletionEnabled, blockSelection, handleDeleteSelection, handleKeyDown],
+  );
+
+  // Floating delete button position. Computed after the button mounts so we can
+  // measure it and keep it inside the slide — flipping below the selection when
+  // there's no room above, and pulling it left when it would overflow the right
+  // edge (the slide clips its overflow, so an unclamped button gets cut off).
+  const deleteBtnRef = useRef<HTMLButtonElement>(null);
+  const [deleteBtnPos, setDeleteBtnPos] = useState<{ top: number; left: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const root = slideRef.current;
+    const btn = deleteBtnRef.current;
+    if (!blockSelection || !root || !btn) {
+      setDeleteBtnPos(null);
+      return;
+    }
+    const { top, bottom, left } = blockSelection.anchor;
+    const w = btn.offsetWidth;
+    const h = btn.offsetHeight;
+    const gap = 4; // breathing room between button and selection
+    const margin = 4; // min distance from the slide edges
+
+    // Vertical: prefer above the selection, flip below if it would clip the top.
+    let nextTop = top - h - gap;
+    if (nextTop < root.scrollTop + margin) {
+      nextTop = bottom + gap;
+    }
+    const maxTop = root.scrollTop + root.clientHeight - h - margin;
+    if (nextTop > maxTop) nextTop = Math.max(root.scrollTop + margin, maxTop);
+
+    // Horizontal: anchor to the selection's right edge, clamp within the slide.
+    let nextLeft = left + gap;
+    const maxLeft = root.scrollLeft + root.clientWidth - w - margin;
+    if (nextLeft > maxLeft) nextLeft = maxLeft;
+    if (nextLeft < root.scrollLeft + margin) nextLeft = root.scrollLeft + margin;
+
+    setDeleteBtnPos({ top: nextTop, left: nextLeft });
+  }, [blockSelection]);
+
   const annotationCSSVars: React.CSSProperties = {};
   if (annotationStyle?.backgroundColor) {
     (annotationCSSVars as Record<string, string>)['--industry-md-annotation-bg'] =
@@ -1408,7 +1465,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         ...annotationCSSVars,
       }}
       tabIndex={0}
-      onKeyDown={handleKeyDown}
+      onKeyDown={handleSlideKeyDown}
       onClick={() => {
         if (slideRef.current) {
           slideRef.current.focus();
@@ -1433,6 +1490,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       {/* Floating delete button for a resolved block selection. */}
       {blockDeletionEnabled && blockSelection && (
         <button
+          ref={deleteBtnRef}
           type="button"
           aria-label="Delete selected block"
           title="Delete selected block"
@@ -1445,9 +1503,11 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
           }}
           style={{
             position: 'absolute',
-            top: blockSelection.anchor.top,
-            left: blockSelection.anchor.left,
-            transform: 'translate(4px, -100%)',
+            top: deleteBtnPos?.top ?? blockSelection.anchor.top,
+            left: deleteBtnPos?.left ?? blockSelection.anchor.left,
+            // Hidden until measured/clamped to avoid a one-frame flash at the
+            // raw (potentially cut-off) anchor position.
+            visibility: deleteBtnPos ? 'visible' : 'hidden',
             zIndex: 20,
             display: 'flex',
             alignItems: 'center',

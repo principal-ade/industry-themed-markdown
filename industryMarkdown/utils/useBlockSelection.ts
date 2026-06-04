@@ -7,8 +7,13 @@ export const BLOCK_SELECTED_ATTR = 'data-md-selected';
 export type DeletionMode = 'block' | 'text';
 
 interface SelectionAnchor {
-  /** Position for the floating action button, relative to the slide root. */
+  /**
+   * Position for the floating action button, relative to the slide root's
+   * scrolled content. `top`/`bottom` are the selection's top/bottom edges and
+   * `left` is its right edge; the consumer clamps the button within the slide.
+   */
   top: number;
+  bottom: number;
   left: number;
 }
 
@@ -171,6 +176,7 @@ export function useBlockSelection({
       const rangeRect = range.getBoundingClientRect();
       return {
         top: rangeRect.top - rootRect.top + root.scrollTop,
+        bottom: rangeRect.bottom - rootRect.top + root.scrollTop,
         left: rangeRect.right - rootRect.left + root.scrollLeft,
       };
     };
