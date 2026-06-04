@@ -66,6 +66,7 @@ import {
   RepositoryInfo,
 } from '@principal-ade/markdown-utils';
 import { defaultSchema } from 'hast-util-sanitize';
+import { Trash2 } from 'lucide-react';
 import React, { useRef, useEffect, useLayoutEffect, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
@@ -77,9 +78,16 @@ import remarkGfm from 'remark-gfm';
 
 import type { Annotation, AnnotationSelection } from '../types/annotations';
 import { KeyboardBinding } from '../types/keyboard';
+import {
+  computeDeletion,
+  computeTextDeletion,
+  type BlockDeletionTarget,
+} from '../utils/blockDeletion';
 import { highlightSearchMatches } from '../utils/highlightSearchMatches';
 import { parseMarkdownChunks } from '../utils/markdownUtils';
+import { rehypeSourcePositions } from '../utils/rehypeSourcePositions';
 import { useAnnotations } from '../utils/useAnnotations';
+import { useBlockSelection } from '../utils/useBlockSelection';
 
 import { IndustryHtmlModal, useIndustryHtmlModal } from './IndustryHtmlModal';
 import { IndustryLazyMermaidDiagram } from './IndustryLazyMermaidDiagram';
@@ -145,6 +153,41 @@ export interface IndustryMarkdownSlideProps {
 
   // === Editing ===
   editable?: boolean; // When true, checkboxes are interactive. Default: false
+
+  // === Block Selection / Deletion ===
+  /**
+   * When true, highlighting text inside the slide resolves to the top-level
+   * block(s) it touches and surfaces a floating delete button. The button is
+   * only shown when a delete handler (`onContentChange` or `onDeleteBlocks`)
+   * is also provided.
+   */
+  selectableBlocks?: boolean;
+  /**
+   * How a highlight is resolved for deletion:
+   * - 'block' (default): removes the whole top-level block(s) the highlight
+   *   touches — robust, and works alongside search highlighting.
+   * - 'text': removes the exact highlighted text, mapped back to the markdown
+   *   source. Falls back to whole-block removal when a precise range can't be
+   *   resolved (e.g. selections inside code or spanning blocks). Note that
+   *   partially selecting inline-formatted text (e.g. the word inside
+   *   `**bold**`) can leave the surrounding markers behind.
+   */
+  deletionMode?: 'block' | 'text';
+  /**
+   * Called with the full slide content after the selected block(s) are
+   * removed. The slide is presentational — the consumer owns `content` and is
+   * expected to persist this and feed it back in.
+   */
+  onContentChange?: (newContent: string) => void;
+  /**
+   * Optional richer notification fired alongside `onContentChange` when a
+   * block deletion occurs.
+   */
+  onDeleteBlocks?: (info: {
+    newContent: string;
+    removedText: string;
+    targets: BlockDeletionTarget[];
+  }) => void;
 
   // === Annotations ===
   annotations?: Annotation[];
@@ -370,6 +413,55 @@ const annotationCSS = `
   }
 `;
 
+// Outline applied to blocks a highlight has resolved to for deletion. Paints
+// via a data attribute set by useBlockSelection so React's tree is untouched.
+const blockSelectionCSS = `
+  .markdown-slide [data-md-selected] {
+    outline: 2px solid var(--industry-md-delete-outline, rgba(220, 38, 38, 0.7));
+    outline-offset: 2px;
+    border-radius: 3px;
+    background-color: var(--industry-md-delete-bg, rgba(220, 38, 38, 0.08));
+  }
+
+  /* Clickable list-item markers (bullet / number) for per-item deletion. */
+  .markdown-slide li.md-del-li {
+    list-style: none;
+  }
+  .markdown-slide .md-del-marker {
+    flex: 0 0 auto;
+    width: 1.5em;
+    margin-right: 0.35em;
+    padding: 0;
+    box-sizing: border-box;
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    text-align: right;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s ease;
+  }
+  .markdown-slide ul .md-del-marker::before {
+    content: "\\2022"; /* • */
+  }
+  .markdown-slide ol {
+    counter-reset: md-del-counter;
+  }
+  .markdown-slide ol > li > .md-del-marker::before {
+    counter-increment: md-del-counter;
+    content: counter(md-del-counter) ".";
+  }
+  .markdown-slide .md-del-marker:hover {
+    color: var(--industry-md-delete-outline, #dc2626);
+  }
+  .markdown-slide .md-del-marker:hover::before {
+    content: "\\2715"; /* ✕ */
+  }
+`;
+
 // CSS for smooth font size transitions and first-child heading adjustments
 const fontTransitionCSS = `
   .markdown-slide * {
@@ -438,6 +530,13 @@ const injectStyles = () => {
       annotationStyle.id = 'markdown-slide-annotations';
       annotationStyle.textContent = annotationCSS;
       document.head.appendChild(annotationStyle);
+    }
+
+    if (!document.getElementById('markdown-slide-block-selection')) {
+      const blockSelectionStyle = document.createElement('style');
+      blockSelectionStyle.id = 'markdown-slide-block-selection';
+      blockSelectionStyle.textContent = blockSelectionCSS;
+      document.head.appendChild(blockSelectionStyle);
     }
 
     stylesInjected = true;
@@ -568,6 +667,12 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
 
   // === Editing ===
   editable = false,
+
+  // === Block Selection / Deletion ===
+  selectableBlocks = false,
+  deletionMode = 'block',
+  onContentChange,
+  onDeleteBlocks,
 
   // === Annotations ===
   annotations,
@@ -1061,6 +1166,24 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   // Use component theme for lazy loading margins
   const rootMargin = isVisible ? '0px' : '100px'; // Simplified lazy loading margins
 
+  // Block selection / deletion is only active when explicitly enabled *and* a
+  // delete handler is wired up, so the default reading experience (including
+  // plain text selection for annotations) is untouched.
+  const hasDeleteHandler = !!onContentChange || !!onDeleteBlocks;
+  const blockDeletionEnabled = selectableBlocks && hasDeleteHandler;
+
+  // Delete a single list item by its source line range (clicked bullet).
+  const handleDeleteListItem = useCallback(
+    (chunkIndex: number, startLine: number, endLine: number) => {
+      const targets = [{ chunkIndex, startLine, endLine }];
+      const { newContent, removedText } = computeDeletion(content, chunks, targets);
+      if (newContent === content) return;
+      onContentChange?.(newContent);
+      onDeleteBlocks?.({ newContent, removedText, targets });
+    },
+    [content, chunks, onContentChange, onDeleteBlocks],
+  );
+
   // Create a function to get markdown components for each chunk index
   const getMarkdownComponents = useCallback(
     (chunkIndex: number) => {
@@ -1080,6 +1203,8 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         index: chunkIndex,
         repositoryInfo,
         editable,
+        selectableBlocks,
+        onDeleteListItem: blockDeletionEnabled ? handleDeleteListItem : undefined,
       });
 
       // Add mark component for search highlighting with inline styles
@@ -1122,8 +1247,31 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       repositoryInfo,
       searchQuery,
       editable,
+      selectableBlocks,
+      blockDeletionEnabled,
+      handleDeleteListItem,
     ],
   );
+
+  // Precise ("text") deletion needs source-offset spans wrapped around prose
+  // text. They're only injected when needed — and never alongside search
+  // highlighting, which rewrites the content string and would invalidate the
+  // offsets.
+  const sourcePositionsEnabled =
+    blockDeletionEnabled && deletionMode === 'text' && !searchQuery;
+
+  const rehypePlugins = useMemo(() => {
+    const plugins: React.ComponentProps<typeof ReactMarkdown>['rehypePlugins'] = [
+      rehypeRaw,
+      [rehypeSanitize, sanitizeSchema],
+      rehypeSlug,
+      rehypeHighlight,
+    ];
+    if (sourcePositionsEnabled) {
+      plugins.push(rehypeSourcePositions);
+    }
+    return plugins;
+  }, [sanitizeSchema, sourcePositionsEnabled]);
 
   // Memoize the rendered chunks so that annotation-related state changes
   // (which re-render IndustryMarkdownSlide) don't cause ReactMarkdown to
@@ -1152,12 +1300,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
           <ReactMarkdown
             key={`${chunk.id}-${JSON.stringify(theme.colors.accent)}`}
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[
-              rehypeRaw,
-              [rehypeSanitize, sanitizeSchema],
-              rehypeSlug,
-              rehypeHighlight,
-            ]}
+            rehypePlugins={rehypePlugins}
             components={getMarkdownComponents(index)}
           >
             {processedContent}
@@ -1185,7 +1328,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     content,
     searchQuery,
     theme,
-    sanitizeSchema,
+    rehypePlugins,
     getMarkdownComponents,
     rootMargin,
     onCopyMermaidError,
@@ -1201,6 +1344,37 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     onSelectionChange,
     onAnnotationClick,
   });
+
+  const { selection: blockSelection, clear: clearBlockSelection } = useBlockSelection({
+    rootRef: slideRef,
+    enabled: blockDeletionEnabled,
+    mode: deletionMode,
+  });
+
+  const handleDeleteSelection = useCallback(() => {
+    if (!blockSelection) return;
+    const result =
+      blockSelection.kind === 'text'
+        ? computeTextDeletion(
+            content,
+            chunks,
+            blockSelection.chunkIndex,
+            blockSelection.startOffset,
+            blockSelection.endOffset,
+          )
+        : computeDeletion(content, chunks, blockSelection.targets);
+    if (result.newContent === content) {
+      clearBlockSelection();
+      return;
+    }
+    onContentChange?.(result.newContent);
+    onDeleteBlocks?.({
+      newContent: result.newContent,
+      removedText: result.removedText,
+      targets: blockSelection.kind === 'block' ? blockSelection.targets : [],
+    });
+    clearBlockSelection();
+  }, [blockSelection, content, chunks, onContentChange, onDeleteBlocks, clearBlockSelection]);
 
   const annotationCSSVars: React.CSSProperties = {};
   if (annotationStyle?.backgroundColor) {
@@ -1255,6 +1429,44 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
               mount.host,
             ),
           )}
+
+      {/* Floating delete button for a resolved block selection. */}
+      {blockDeletionEnabled && blockSelection && (
+        <button
+          type="button"
+          aria-label="Delete selected block"
+          title="Delete selected block"
+          // Keep the text selection alive when the button is pressed so the
+          // resolved targets aren't cleared out from under the click.
+          onMouseDown={e => e.preventDefault()}
+          onClick={e => {
+            e.stopPropagation();
+            handleDeleteSelection();
+          }}
+          style={{
+            position: 'absolute',
+            top: blockSelection.anchor.top,
+            left: blockSelection.anchor.left,
+            transform: 'translate(4px, -100%)',
+            zIndex: 20,
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.space[1],
+            padding: `${theme.space[1]}px ${theme.space[2]}px`,
+            backgroundColor: theme.colors.error || '#dc2626',
+            color: '#fff',
+            border: 'none',
+            borderRadius: theme.radii[1],
+            fontSize: theme.fontSizes[0],
+            fontFamily: theme.fonts.body,
+            cursor: 'pointer',
+            boxShadow: theme.shadows?.[2] ?? '0 2px 8px rgba(0,0,0,0.25)',
+          }}
+        >
+          <Trash2 size={14} />
+          Delete
+        </button>
+      )}
 
       {/* HTML Modal */}
       <IndustryHtmlModal

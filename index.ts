@@ -59,6 +59,16 @@ export {
 
 export { parseMarkdownChunks } from './industryMarkdown/utils/markdownUtils';
 
+export {
+  computeDeletion,
+  computeTextDeletion,
+  computeChunkOffsets,
+} from './industryMarkdown/utils/blockDeletion';
+export type {
+  BlockDeletionTarget,
+  ResolvedDeletion,
+} from './industryMarkdown/utils/blockDeletion';
+
 // Types
 export type {
   MarkdownPresentation,
