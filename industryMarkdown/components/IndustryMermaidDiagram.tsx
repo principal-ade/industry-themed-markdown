@@ -191,8 +191,11 @@ export function IndustryMermaidDiagram({
         // Clear any previous content
         containerElement.innerHTML = '';
 
-        // Create a unique element ID
-        const elementId = `mermaid-${id}-${Date.now()}`;
+        // Create a unique element ID. Mermaid derives a `querySelector` from
+        // this, so it must be a valid CSS selector — sanitize the caller's `id`
+        // (which may carry `:`, `/`, `.`, etc.) to a selector-safe token.
+        const safeId = id.replace(/[^a-zA-Z0-9_-]/g, '-');
+        const elementId = `mermaid-${safeId}-${Date.now()}`;
 
         // Render the diagram into the container
         const { svg, bindFunctions } = await mermaid.render(elementId, code);
