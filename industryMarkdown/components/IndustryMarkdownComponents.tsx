@@ -406,7 +406,7 @@ export const createIndustryMarkdownComponents = ({
           fontSize: theme.fontSizes[2],
           lineHeight: theme.lineHeights.body,
           marginBottom: theme.space[3],
-          paddingLeft: theme.space[5],
+          paddingLeft: theme.space[3],
           listStyleType: 'disc',
           fontFamily: theme.fonts.body,
         }}
@@ -423,7 +423,7 @@ export const createIndustryMarkdownComponents = ({
           fontSize: theme.fontSizes[2],
           lineHeight: theme.lineHeights.body,
           marginBottom: theme.space[3],
-          paddingLeft: theme.space[5],
+          paddingLeft: theme.space[3],
           listStyleType: 'decimal',
           fontFamily: theme.fonts.body,
         }}
@@ -479,7 +479,7 @@ export const createIndustryMarkdownComponents = ({
           <li
             style={{
               listStyle: 'none',
-              marginLeft: `-${theme.space[5]}px`,
+              marginLeft: `-${theme.space[3]}px`,
               marginBottom: theme.space[3], // Increased spacing for task items
               paddingTop: theme.space[1], // Add padding for breathing room
               color: theme.colors.text,
