@@ -6,7 +6,7 @@
  */
 
 import { Theme, theme as defaultTheme } from '@principal-ade/industry-theme';
-import { Expand, Copy, Check } from 'lucide-react';
+import { Expand, Copy, Check, ArrowUpRight } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
 interface IndustryMermaidDiagramProps {
@@ -19,6 +19,13 @@ interface IndustryMermaidDiagramProps {
   isModalMode?: boolean;
   isFullSlide?: boolean;
   onExpandClick?: () => void;
+  /**
+   * When provided, renders an "open in tab" arrow button alongside the
+   * fullscreen/expand button. Intended for consumers (e.g. the Alexandria
+   * window) that want to open the diagram as its own tab rather than the
+   * in-app modal that `onExpandClick` drives.
+   */
+  onOpenInTab?: () => void;
 }
 
 // Define mermaid type
@@ -53,6 +60,7 @@ export function IndustryMermaidDiagram({
   isModalMode = false,
   isFullSlide = false,
   onExpandClick,
+  onOpenInTab,
 }: IndustryMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
@@ -445,7 +453,7 @@ ${errorDetails.code}
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <div style={{ position: 'relative', width: '100%' }}>
-        {hasRendered && !isModalMode && onExpandClick && !errorDetails && (
+        {hasRendered && !isModalMode && (onExpandClick || onOpenInTab) && !errorDetails && (
           <div
             style={{
               position: 'absolute',
@@ -456,28 +464,54 @@ ${errorDetails.code}
               gap: theme.space[1],
             }}
           >
-            <button
-              onClick={e => {
-                e.stopPropagation();
-                onExpandClick();
-              }}
-              style={{
-                padding: theme.space[1],
-                backgroundColor: theme.colors.backgroundSecondary,
-                border: `1px solid ${theme.colors.border}`,
-                borderRadius: theme.radii[1],
-                color: theme.colors.text,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '28px',
-                height: '28px',
-              }}
-              title="View fullscreen"
-            >
-              <Expand size={14} />
-            </button>
+            {onExpandClick && (
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  onExpandClick();
+                }}
+                style={{
+                  padding: theme.space[1],
+                  backgroundColor: theme.colors.backgroundSecondary,
+                  border: `1px solid ${theme.colors.border}`,
+                  borderRadius: theme.radii[1],
+                  color: theme.colors.text,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '28px',
+                  height: '28px',
+                }}
+                title="View fullscreen"
+              >
+                <Expand size={14} />
+              </button>
+            )}
+            {onOpenInTab && (
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  onOpenInTab();
+                }}
+                style={{
+                  padding: theme.space[1],
+                  backgroundColor: theme.colors.backgroundSecondary,
+                  border: `1px solid ${theme.colors.border}`,
+                  borderRadius: theme.radii[1],
+                  color: theme.colors.text,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '28px',
+                  height: '28px',
+                }}
+                title="Open in new tab"
+              >
+                <ArrowUpRight size={14} />
+              </button>
+            )}
           </div>
         )}
         <div ref={containerRef} style={containerStyle} className="mermaid-container">

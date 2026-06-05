@@ -107,6 +107,14 @@ export interface IndustryMarkdownSlideProps {
   onCheckboxChange?: (slideIndex: number, lineNumber: number, checked: boolean) => void;
   onCopyMermaidError?: (mermaidCode: string, errorMessage: string) => void;
   onShowMermaidInPanel?: (code: string, title?: string) => void;
+  /**
+   * When provided, renders an "open in tab" arrow button over each mermaid
+   * diagram, next to the fullscreen/expand button. Called with the diagram
+   * code (and a best-effort title derived from the diagram source) so the
+   * consumer can open it as its own tab — e.g. the Alexandria window opening
+   * a diagram from a topic description/notes.
+   */
+  onOpenMermaidInTab?: (code: string, title?: string) => void;
   handleRunBashCommand?: (
     command: string,
     options?: BashCommandOptions,
@@ -634,6 +642,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   onCheckboxChange,
   onCopyMermaidError,
   onShowMermaidInPanel,
+  onOpenMermaidInTab,
   handleRunBashCommand,
   handlePromptCopy,
 
@@ -1319,6 +1328,15 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         if (onShowMermaidInPanel) {
           mermaidProps.onShowInPanel = onShowMermaidInPanel;
         }
+        if (onOpenMermaidInTab) {
+          const handler = onOpenMermaidInTab;
+          mermaidProps.onOpenInTab = () => {
+            // Best-effort title: first %% comment or the diagram type keyword.
+            const titleMatch = chunk.content.match(/^(?:%%\s*(.+)|(\w+)\s)/m);
+            const title = titleMatch?.[1] || titleMatch?.[2] || 'Diagram from Markdown';
+            handler(chunk.content, title);
+          };
+        }
         return <IndustryLazyMermaidDiagram key={chunk.id} {...mermaidProps} />;
       }
       return null;
@@ -1333,6 +1351,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     rootMargin,
     onCopyMermaidError,
     onShowMermaidInPanel,
+    onOpenMermaidInTab,
   ]);
 
   // Annotations: walk the rendered DOM and wrap matched ranges so consumers

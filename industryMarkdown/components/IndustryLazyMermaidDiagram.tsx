@@ -12,6 +12,11 @@ interface IndustryLazyMermaidDiagramProps {
   onShowInPanel?: (code: string, title?: string) => void;
   theme?: Theme;
   onExpandClick?: () => void;
+  /**
+   * Forwarded to `IndustryMermaidDiagram` to render an "open in tab" arrow
+   * button next to the fullscreen/expand button.
+   */
+  onOpenInTab?: () => void;
 }
 
 export function IndustryLazyMermaidDiagram({
@@ -22,6 +27,7 @@ export function IndustryLazyMermaidDiagram({
   onShowInPanel,
   theme: themeOverride,
   onExpandClick,
+  onOpenInTab,
 }: IndustryLazyMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
@@ -167,6 +173,7 @@ export function IndustryLazyMermaidDiagram({
           onError={setHasError}
           theme={theme}
           onExpandClick={onExpandClick}
+          onOpenInTab={onOpenInTab}
         />
       ) : (
         <div style={getPlaceholderStyle()}>

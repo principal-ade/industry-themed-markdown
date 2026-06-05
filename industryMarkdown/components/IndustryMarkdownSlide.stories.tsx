@@ -624,7 +624,14 @@ export const TopicNotesIndentation: Story = {
     content: `* Added \`AgentConfigurationService.detectInstalled(agent)\` — reads \`AGENT_INFO[agent].installation.binaryName\` and runs a real \`which\` via the existing \`ShellService.checkCommand\` bridge (no new IPC needed; the bridge already existed).
 * \`commandHandlers.ts\`: aligned the \`terminal:checkCommand\` return with its declared \`ShellAPI\` contract (\`{ exists, path }\` — it previously returned \`{ available }\` that no consumer could read).
 * \`AIAssistantsSettings.tsx\`: badge now reflects real detection; shows "Not installed · Get it" linking to the agent download URL when absent.
-* \`AgentSetupWizard.tsx\` + \`InstallStep.tsx\`: Configure flow fed real detection; InstallStep now respects its \`isInstalled\` prop (it was previously ignored entirely) and shows an installed confirmation instead of the download prompt.`,
+* \`AgentSetupWizard.tsx\` + \`InstallStep.tsx\`: Configure flow fed real detection; InstallStep now respects its \`isInstalled\` prop (it was previously ignored entirely) and shows an installed confirmation instead of the download prompt.
+
+## Numbered list check
+
+1. Added \`AgentConfigurationService.detectInstalled(agent)\` — reads \`AGENT_INFO[agent].installation.binaryName\` and runs a real \`which\` via the existing \`ShellService.checkCommand\` bridge (no new IPC needed; the bridge already existed).
+2. \`commandHandlers.ts\`: aligned the \`terminal:checkCommand\` return with its declared \`ShellAPI\` contract (\`{ exists, path }\` — it previously returned \`{ available }\` that no consumer could read).
+3. \`AIAssistantsSettings.tsx\`: badge now reflects real detection; shows "Not installed · Get it" linking to the agent download URL when absent.
+4. \`AgentSetupWizard.tsx\` + \`InstallStep.tsx\`: Configure flow fed real detection; InstallStep now respects its \`isInstalled\` prop (it was previously ignored entirely) and shows an installed confirmation instead of the download prompt.`,
     slideIdPrefix: 'topic-notes',
     slideIndex: 0,
     isVisible: true,
