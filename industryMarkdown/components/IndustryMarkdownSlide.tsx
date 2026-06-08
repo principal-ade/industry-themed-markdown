@@ -69,7 +69,7 @@ import { defaultSchema } from 'hast-util-sanitize';
 import { Trash2 } from 'lucide-react';
 import React, { useRef, useEffect, useLayoutEffect, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
@@ -158,6 +158,14 @@ export interface IndustryMarkdownSlideProps {
 
   // === External Data ===
   repositoryInfo?: RepositoryInfo; // Repository information for resolving relative image URLs
+  /**
+   * Host-facing image resolver. Called with the raw markdown image `src` before
+   * the built-in repository-relative resolution. When it returns a truthy value,
+   * that value is used as-is — letting the host own custom schemes such as
+   * `asset://<hash>` (resolved to a data-URL or http URL). Falls back to
+   * repository-relative resolution otherwise.
+   */
+  transformImageUri?: (src: string) => string;
 
   // === Editing ===
   editable?: boolean; // When true, checkboxes are interactive. Default: false
@@ -673,6 +681,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
 
   // === External Data ===
   repositoryInfo,
+  transformImageUri,
 
   // === Editing ===
   editable = false,
@@ -1100,6 +1109,15 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   const sanitizeSchema = useMemo(
     () => ({
       ...defaultSchema,
+      // When a host image resolver is provided, drop the `src` protocol
+      // allow-list so custom schemes (e.g. `asset://<hash>`) survive sanitize
+      // and reach the resolver. Image `src` is inert against script execution,
+      // and the resolved value is fully controlled by the host's resolver.
+      protocols: transformImageUri
+        ? Object.fromEntries(
+            Object.entries(defaultSchema.protocols ?? {}).filter(([key]) => key !== 'src'),
+          )
+        : defaultSchema.protocols,
       tagNames: [...(defaultSchema.tagNames || []), 'picture', 'source', 'mark'],
       attributes: {
         ...defaultSchema.attributes,
@@ -1169,7 +1187,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         section: [...(defaultSchema.attributes?.section || []), 'style', 'className'],
       },
     }),
-    [],
+    [transformImageUri],
   );
 
   // Use component theme for lazy loading margins
@@ -1211,6 +1229,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         slideHeaderMarginTopOverride,
         index: chunkIndex,
         repositoryInfo,
+        transformImageUri,
         editable,
         selectableBlocks,
         onDeleteListItem: blockDeletionEnabled ? handleDeleteListItem : undefined,
@@ -1254,6 +1273,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       enableHtmlPopout,
       slideHeaderMarginTopOverride,
       repositoryInfo,
+      transformImageUri,
       searchQuery,
       editable,
       selectableBlocks,
@@ -1268,6 +1288,22 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   // offsets.
   const sourcePositionsEnabled =
     blockDeletionEnabled && deletionMode === 'text' && !searchQuery;
+
+  // react-markdown runs `defaultUrlTransform` on every `src`/`href`, which
+  // strips custom schemes like `asset://` to an empty string before our `img`
+  // component can resolve them. When a host resolver is set, pass image `src`
+  // values through untouched so `transformImageUri` (applied in
+  // OptimizedMarkdownMedia) sees the raw reference; everything else keeps the
+  // default sanitizing behaviour.
+  const urlTransform = useMemo(() => {
+    if (!transformImageUri) return undefined;
+    return (url: string, key: string, node: { tagName?: string }) => {
+      if (key === 'src' || node?.tagName === 'img' || node?.tagName === 'source') {
+        return url;
+      }
+      return defaultUrlTransform(url);
+    };
+  }, [transformImageUri]);
 
   const rehypePlugins = useMemo(() => {
     const plugins: React.ComponentProps<typeof ReactMarkdown>['rehypePlugins'] = [
@@ -1310,6 +1346,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
             key={`${chunk.id}-${JSON.stringify(theme.colors.accent)}`}
             remarkPlugins={[remarkGfm]}
             rehypePlugins={rehypePlugins}
+            urlTransform={urlTransform}
             components={getMarkdownComponents(index)}
           >
             {processedContent}

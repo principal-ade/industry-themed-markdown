@@ -41,6 +41,11 @@ interface IndustryMarkdownComponentsProps {
   slideHeaderMarginTopOverride?: number;
   index: number;
   repositoryInfo?: RepositoryInfo;
+  // Host-facing image resolver. Called with the raw markdown image `src` before
+  // the built-in repository-relative resolution. When it returns a truthy value,
+  // that value is used as-is (host owns scheme detection, e.g. `asset://<hash>`
+  // → data-URL); otherwise resolution falls back to `transformImageUrl`.
+  transformImageUri?: (src: string) => string;
   editable?: boolean; // When true, checkboxes are interactive. Default: false
   // When true, top-level block elements are tagged with their chunk index and
   // source line range so a highlight can be resolved back to deletable blocks.
@@ -83,17 +88,23 @@ const OptimizedMarkdownMedia = React.memo(
     src,
     alt,
     repositoryInfo,
+    transformImageUri,
     theme,
     ...props
   }: {
     src: string;
     alt: string;
     repositoryInfo?: RepositoryInfo;
+    transformImageUri?: (src: string) => string;
     theme: Theme;
   }) => {
     const transformedSrc = useMemo(() => {
+      // Host resolver wins when it returns a value (e.g. `asset://<hash>` →
+      // data-URL); otherwise fall back to repository-relative resolution.
+      const resolved = transformImageUri?.(src);
+      if (resolved) return resolved;
       return transformImageUrl(src, repositoryInfo);
-    }, [src, repositoryInfo]);
+    }, [src, repositoryInfo, transformImageUri]);
 
     const [hasErrored, setHasErrored] = useState(() => failedImageCache.has(transformedSrc));
     const retryCount = useRef(0);
@@ -228,6 +239,7 @@ export const createIndustryMarkdownComponents = ({
   slideHeaderMarginTopOverride,
   index,
   repositoryInfo,
+  transformImageUri,
   editable = false,
   selectableBlocks = false,
   onDeleteListItem,
@@ -690,6 +702,7 @@ export const createIndustryMarkdownComponents = ({
         src={src || ''}
         alt={alt || ''}
         repositoryInfo={repositoryInfo}
+        transformImageUri={transformImageUri}
         theme={theme}
         {...props}
       />
@@ -724,7 +737,7 @@ export const createIndustryMarkdownComponents = ({
       const srcsetValue = srcset || srcSet;
 
       const transformedSrcset = useMemo(() => {
-        if (!srcsetValue || !repositoryInfo) return srcsetValue;
+        if (!srcsetValue || (!repositoryInfo && !transformImageUri)) return srcsetValue;
 
         return srcsetValue
           .split(',')
@@ -734,11 +747,12 @@ export const createIndustryMarkdownComponents = ({
             const url = parts[0];
             const descriptors = parts.slice(1).join(' ');
 
-            const transformedUrl = transformImageUrl(url, repositoryInfo);
+            const transformedUrl =
+              transformImageUri?.(url) || transformImageUrl(url, repositoryInfo);
             return descriptors ? `${transformedUrl} ${descriptors}` : transformedUrl;
           })
           .join(', ');
-      }, [srcsetValue, repositoryInfo]);
+      }, [srcsetValue, repositoryInfo, transformImageUri]);
 
       return <source srcSet={transformedSrcset} {...props} />;
     },
