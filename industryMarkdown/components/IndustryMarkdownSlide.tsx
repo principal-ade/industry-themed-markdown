@@ -740,57 +740,38 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     injectStyles();
   }, []);
 
-  // ResizeObserver to measure container width when containerWidth prop is not provided
-  useEffect(() => {
+  // ResizeObserver to measure container width when containerWidth prop is not provided.
+  // Runs as a layout effect so the parent is measured synchronously before the browser
+  // paints — otherwise the first frame uses the 800px fallback and the padding visibly
+  // snaps to the measured width once an async (post-paint) observer fires.
+  useLayoutEffect(() => {
     if (containerWidth !== undefined) {
       // If containerWidth is provided, don't use ResizeObserver
       return;
     }
 
-    if (!slideRef.current) {
+    // Layout effects run after the DOM is mutated but before paint, so the parent is
+    // already attached — no setTimeout retry needed.
+    const parentContainer = slideRef.current?.parentElement;
+    if (!parentContainer) {
       return;
     }
 
-    // Add a small delay to ensure the DOM is fully rendered
-    const setupResizeObserver = () => {
-      // Observe the parent container instead of the slide content
-      const parentContainer = slideRef.current?.parentElement;
-      if (!parentContainer) {
-        return;
+    // Seed the measured width synchronously so the first painted frame already has the
+    // correct padding instead of the 800px fallback.
+    setMeasuredContainerWidth(parentContainer.getBoundingClientRect().width);
+
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width } = entry.contentRect;
+        setMeasuredContainerWidth(width);
       }
+    });
 
-      const resizeObserver = new ResizeObserver(entries => {
-        for (const entry of entries) {
-          const { width } = entry.contentRect;
-          setMeasuredContainerWidth(width);
-        }
-      });
-
-      resizeObserver.observe(parentContainer);
-      return resizeObserver;
-    };
-
-    // Try to set up immediately, but also retry after a short delay
-    let resizeObserver = setupResizeObserver();
-
-    if (!resizeObserver) {
-      // If immediate setup failed, retry after a short delay
-      const timeoutId = setTimeout(() => {
-        resizeObserver = setupResizeObserver();
-      }, 100);
-
-      return () => {
-        clearTimeout(timeoutId);
-        if (resizeObserver) {
-          resizeObserver.disconnect();
-        }
-      };
-    }
+    resizeObserver.observe(parentContainer);
 
     return () => {
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-      }
+      resizeObserver.disconnect();
     };
   }, [containerWidth]);
 
