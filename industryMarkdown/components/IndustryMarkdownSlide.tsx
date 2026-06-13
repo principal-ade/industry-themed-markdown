@@ -64,6 +64,7 @@ import {
   BashCommandOptions,
   BashCommandResult,
   RepositoryInfo,
+  rehypeCodeKind,
 } from '@principal-ade/markdown-utils';
 import { defaultSchema } from 'hast-util-sanitize';
 import { Trash2 } from 'lucide-react';
@@ -274,7 +275,11 @@ const highlightOverrides = `
     background-color: transparent !important;
   }
 
-  /* Aggressive removal of backgrounds and padding for inline code */
+  /* Inline code pill: themed background/padding/radius driven by per-element
+     CSS vars set on the <code> in IndustryMarkdownComponents. Defaults keep
+     the old transparent/zero behavior when the vars are unset. hljs token
+     backgrounds are still stripped (the var only paints the <code> container,
+     not the spans inside it — see the token rules below). */
   p code,
   li code,
   td code,
@@ -288,9 +293,9 @@ const highlightOverrides = `
   blockquote code,
   .inline-code,
   code:not(pre code) {
-    background: transparent !important;
-    background-color: transparent !important;
-    padding: 0 !important;
+    background-color: var(--inline-code-bg, transparent) !important;
+    padding: var(--inline-code-padding, 0) !important;
+    border-radius: var(--inline-code-radius, 0) !important;
     border: none !important;
     box-shadow: none !important;
     color: var(--text-color, currentColor) !important;
@@ -301,9 +306,9 @@ const highlightOverrides = `
   .inline-code[class*="hljs"],
   .inline-code[class*="language"] {
     color: var(--text-color) !important;
-    background: transparent !important;
-    background-color: transparent !important;
-    padding: 0 !important;
+    background-color: var(--inline-code-bg, transparent) !important;
+    padding: var(--inline-code-padding, 0) !important;
+    border-radius: var(--inline-code-radius, 0) !important;
   }
 
   /* Override any highlight.js styles on inline code */
@@ -315,9 +320,9 @@ const highlightOverrides = `
   li code[class*="language"],
   td code[class*="language"],
   th code[class*="language"] {
-    background: transparent !important;
-    background-color: transparent !important;
-    padding: 0 !important;
+    background-color: var(--inline-code-bg, transparent) !important;
+    padding: var(--inline-code-padding, 0) !important;
+    border-radius: var(--inline-code-radius, 0) !important;
     border: none !important;
     box-shadow: none !important;
     color: var(--text-color) !important;
@@ -331,12 +336,11 @@ const highlightOverrides = `
     font-family: var(--monospace-font-family, monospace) !important;
     font-size: 0.875em !important;
     color: var(--text-color) !important;
-    background: transparent !important;
-    background-color: transparent !important;
-    padding: 0 !important;
+    background-color: var(--inline-code-bg, transparent) !important;
+    padding: var(--inline-code-padding, 0) !important;
     margin: 0 !important;
     border: none !important;
-    border-radius: 0 !important;
+    border-radius: var(--inline-code-radius, 0) !important;
     box-shadow: none !important;
     text-shadow: none !important;
   }
@@ -1292,6 +1296,10 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       [rehypeSanitize, sanitizeSchema],
       rehypeSlug,
       rehypeHighlight,
+      // Stamp each <code> with an explicit inline/block flag (read by the
+      // `code` component) so it doesn't have to guess. Must run after
+      // rehypeSanitize so the `dataInline` property survives.
+      rehypeCodeKind,
     ];
     if (sourcePositionsEnabled) {
       plugins.push(rehypeSourcePositions);

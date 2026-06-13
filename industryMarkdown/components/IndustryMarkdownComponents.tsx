@@ -769,10 +769,20 @@ export const createIndustryMarkdownComponents = ({
       let isInline: boolean;
       let isCodeBlock: boolean;
 
+      // Prefer the explicit inline/block flag stamped on the AST by the
+      // rehypeCodeKind plugin — a <code> inside <pre> is a block, everything
+      // else is inline. Authoritative, so it wins over the heuristics below.
+      const explicitInline = (node as { properties?: { dataInline?: unknown } })?.properties
+        ?.dataInline;
+
       // Check if this is a multi-line code block (with newlines)
       const hasNewlines = codeString.includes('\n');
 
-      if (!className && !hasNewlines) {
+      if (typeof explicitInline === 'boolean') {
+        // Disambiguated upstream — no guessing needed.
+        isInline = explicitInline;
+        isCodeBlock = !explicitInline;
+      } else if (!className && !hasNewlines) {
         // No class and no newlines = inline code
         isInline = true;
         isCodeBlock = false;
@@ -1049,10 +1059,13 @@ export const createIndustryMarkdownComponents = ({
               color: theme.colors.accent,
               fontSize: '0.875em',
               fontFamily: theme.fonts.monospace,
-              backgroundColor: 'transparent',
-              padding: 0,
-              // Ensure text color and background overrides any highlight.js styles
+              // Ensure text color overrides any highlight.js styles, and feed
+              // the inline-code pill (background/padding/radius) to the global
+              // `!important` rules in highlightOverrides via CSS variables.
               '--text-color': theme.colors.accent,
+              '--inline-code-bg': theme.colors.muted,
+              '--inline-code-padding': '0.1em 0.35em',
+              '--inline-code-radius': `${theme.radii[1]}px`,
             } as React.CSSProperties
           }
           className={cleanClassName ? `inline-code ${cleanClassName}` : 'inline-code'}
