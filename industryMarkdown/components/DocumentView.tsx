@@ -76,7 +76,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
   annotationStyle,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const backgroundColor = transparentBackground ? 'transparent' : theme.colors.background;
+  const backgroundColor = transparentBackground ? 'transparent' : theme.colors.backgroundDark;
 
   return (
     <div

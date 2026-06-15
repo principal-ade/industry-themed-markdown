@@ -1497,7 +1497,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         overflowY: disableScroll ? 'visible' : 'auto',
         overflowX: disableScroll ? 'visible' : 'hidden',
         position: 'relative',
-        backgroundColor: transparentBackground ? 'transparent' : theme.colors.background,
+        backgroundColor: transparentBackground ? 'transparent' : theme.colors.backgroundDark,
         color: theme.colors.text,
         fontFamily: theme.fonts.body,
         padding: finalPadding,
