@@ -1174,6 +1174,18 @@ export const createIndustryMarkdownComponents = ({
             } as React.CSSProperties
           }
           className={cleanClassName ? `inline-code ${cleanClassName}` : 'inline-code'}
+          onDoubleClick={e => {
+            // Treat the backtick-delimited span as one word boundary: the
+            // native double-click picks a single word (splitting on dots,
+            // slashes, etc.), so replace that selection with a range spanning
+            // the whole <code>. Single-click and drag-select are untouched.
+            const sel = window.getSelection();
+            if (!sel) return;
+            const range = document.createRange();
+            range.selectNodeContents(e.currentTarget);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }}
           {...props}
         >
           {children}
