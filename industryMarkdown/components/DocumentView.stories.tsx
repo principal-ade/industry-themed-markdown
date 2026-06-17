@@ -182,25 +182,30 @@ export const RelativeAndExternalLinks: Story = {
     content: `# Link Resolution
 
 Demonstrates how the various markdown link shapes are passed through to
-\`onLinkClick\`. Click any link and check the console for the raw \`href\` the
-host app receives — no resolution is applied by the component itself.
+\`onLinkClick\`. Each rendered link is followed by its raw \`href\` in plain
+text — that string is the entire payload the host receives; no resolution is
+applied by the component itself.
 
 ## Internal (repo-relative) links
 
-- Bare repo-relative: [bare path](docs/panel-prop-convention.md)
-- Dot-slash relative: [dot-slash](./README.md)
-- Leading-slash (repo root): [root-relative](/docs/electron-app-security-followups.md)
-- With a fragment: [with-anchor](docs/panel-prop-convention.md#goal)
-- Nested with ..: [nested](src/renderer/../README.md)
+- Bare repo-relative: [bare path](docs/panel-prop-convention.md) → \`docs/panel-prop-convention.md\`
+- Dot-slash relative: [dot-slash](./README.md) → \`./README.md\`
+- Leading-slash (repo root): [root-relative](/docs/electron-app-security-followups.md) → \`/docs/electron-app-security-followups.md\`
+- With a fragment: [with-anchor](docs/panel-prop-convention.md#goal) → \`docs/panel-prop-convention.md#goal\`
+- Nested with ..: [nested](src/renderer/../README.md) → \`src/renderer/../README.md\`
 
 ## External link
 
-- External (should open browser): [external](https://example.com)`,
+- External (should open browser): [external](https://example.com) → \`https://example.com\``,
     maxWidth: '900px',
     slideIdPrefix: 'links',
     onLinkClick: (href, event) => {
       console.log('Link clicked:', href);
       if (event) event.preventDefault();
+    },
+    onLinkInfoClick: (href, event) => {
+      if (event) event.preventDefault();
+      window.alert(`Link info for: ${href}`);
     },
   },
 };

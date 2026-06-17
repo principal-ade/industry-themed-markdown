@@ -5,7 +5,7 @@ import {
   RepositoryInfo,
   parseBashCommands,
 } from '@principal-ade/markdown-utils';
-import { Copy, Monitor, FileText, Check } from 'lucide-react';
+import { Copy, Monitor, FileText, Check, Info } from 'lucide-react';
 import React, { useMemo, useState, useRef } from 'react';
 
 import {
@@ -18,7 +18,11 @@ import {
   SourceProps,
   CheckboxElementProps,
 } from '../types/markdownComponents';
-import { extractTextFromChildren, LinkWithLoadingIndicator } from '../utils/componentUtils';
+import {
+  extractTextFromChildren,
+  isExternalLink,
+  LinkWithLoadingIndicator,
+} from '../utils/componentUtils';
 import { transformImageUrl } from '../utils/imageUrlUtils';
 
 import { IndustryBashCommandDropdown } from './IndustryBashCommandDropdown';
@@ -28,6 +32,9 @@ interface IndustryMarkdownComponentsProps {
   slideIdPrefix: string;
   slideIndex: number;
   onLinkClick?: (href: string, event?: MouseEvent) => void;
+  // Fired by the info icon revealed on hover of an internal-link pill. Distinct
+  // from `onLinkClick` (navigate) — this opens information/preview about the link.
+  onLinkInfoClick?: (href: string, event?: MouseEvent) => void;
   onCheckboxChange?: (slideIndex: number, lineNumber: number, checked: boolean) => void;
   checkedItems: Record<string, boolean>;
   setCheckedItems: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
@@ -229,6 +236,7 @@ export const createIndustryMarkdownComponents = ({
   slideIdPrefix,
   slideIndex,
   onLinkClick,
+  onLinkInfoClick,
   onCheckboxChange,
   checkedItems,
   setCheckedItems,
@@ -684,17 +692,114 @@ export const createIndustryMarkdownComponents = ({
       </td>
     ),
 
-    // Links
-    a: ({ children, href, ...props }: LinkProps) => (
-      <LinkWithLoadingIndicator
-        href={href || ''}
-        onClick={onLinkClick ? (h, e) => onLinkClick(h, e as unknown as MouseEvent) : undefined}
-        className={props.className}
-        style={{ color: theme.colors.primary, textDecoration: 'underline' }}
-      >
-        {children}
-      </LinkWithLoadingIndicator>
-    ),
+    // Links. External links (web URLs, mailto) keep the underlined look;
+    // internal links — repo-relative paths and resolver schemes routed through
+    // the host — get the pill treatment (themed background + padding + radius,
+    // no underline) so "goes somewhere in our world" reads differently from
+    // "leaves to the browser".
+    a: ({ children, href, ...props }: LinkProps) => {
+      const external = isExternalLink(href || '');
+
+      // External links keep the plain underlined look — no pill, no hover nub.
+      if (external) {
+        return (
+          <LinkWithLoadingIndicator
+            href={href || ''}
+            onClick={onLinkClick ? (h, e) => onLinkClick(h, e as unknown as MouseEvent) : undefined}
+            className={props.className}
+            style={{ color: theme.colors.primary, textDecoration: 'underline' }}
+          >
+            {children}
+          </LinkWithLoadingIndicator>
+        );
+      }
+
+      // Internal pills get a JS-driven hover reaction (local state, applied as
+      // inline styles). Doing it inline rather than via a `:hover` rule sidesteps
+      // the write-once singleton `<style>` block, which never updates once
+      // injected. Hovering reveals an info nub on the right (a sibling button,
+      // not nested in the <a>) that fires onLinkInfoClick — the hook for opening
+      // link information / a preview.
+      const [hovered, setHovered] = useState(false);
+      const [pressed, setPressed] = useState(false);
+      const r = theme.radii[2];
+      const internalPillStyle: React.CSSProperties = {
+        color: theme.colors.accent,
+        // Tactile press on the link text. Inline <a> can't be transform-scaled
+        // (transforms don't apply to inline elements), so the press is a 1px
+        // downward nudge (position/top works inline, no reflow) plus a quick
+        // background darken.
+        position: 'relative',
+        top: pressed ? '1px' : '0',
+        backgroundColor: pressed
+          ? `color-mix(in srgb, ${theme.colors.muted} 88%, #000)`
+          : theme.colors.muted,
+        padding: '0.1em 0.35em',
+        // When the nub is showing, square off the right corners so the pill and
+        // nub meet flush at a seam; keep all corners rounded at rest.
+        borderRadius: hovered ? `${r}px 0 0 ${r}px` : r,
+        textDecoration: 'none',
+        transition: 'top 0.08s ease, background-color 0.08s ease',
+      };
+      return (
+        <span
+          // Plain inline + position:relative as the nub's positioning context.
+          // NOT inline-flex: that would make the <a> a flex item, which honors
+          // its vertical padding as real box height and makes the pill taller.
+          style={{ position: 'relative' }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => {
+            setHovered(false);
+            setPressed(false);
+          }}
+        >
+          <LinkWithLoadingIndicator
+            href={href || ''}
+            onClick={onLinkClick ? (h, e) => onLinkClick(h, e as unknown as MouseEvent) : undefined}
+            onMouseDown={() => setPressed(true)}
+            onMouseUp={() => setPressed(false)}
+            className={props.className}
+            style={internalPillStyle}
+          >
+            {children}
+          </LinkWithLoadingIndicator>
+          {hovered && onLinkInfoClick && (
+            <button
+              type="button"
+              aria-label="Link information"
+              onClick={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                onLinkInfoClick(href || '', e as unknown as MouseEvent);
+              }}
+              style={{
+                position: 'absolute',
+                left: '100%',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '1.4em',
+                width: '1.45em',
+                padding: 0,
+                border: 'none',
+                // Thin divider so pill and nub read as two connected segments
+                // meeting at a seam; square left corners, rounded right.
+                borderLeft: `1px solid ${theme.colors.border}`,
+                cursor: 'pointer',
+                color: theme.colors.accent,
+                backgroundColor: theme.colors.muted,
+                borderRadius: `0 ${r}px ${r}px 0`,
+                zIndex: 1,
+              }}
+            >
+              <Info size={13} />
+            </button>
+          )}
+        </span>
+      );
+    },
 
     // Images and Videos (detected by file extension)
     img: ({ src, alt, ...props }: ImageProps) => (
@@ -1059,13 +1164,13 @@ export const createIndustryMarkdownComponents = ({
               color: theme.colors.accent,
               fontSize: '0.875em',
               fontFamily: theme.fonts.monospace,
-              // Ensure text color overrides any highlight.js styles, and feed
-              // the inline-code pill (background/padding/radius) to the global
-              // `!important` rules in highlightOverrides via CSS variables.
+              // Ensure text color overrides any highlight.js styles. Inline
+              // code is intentionally backgroundless — accent color + monospace
+              // is enough to set it apart, and a filled background is reserved
+              // for genuinely actionable elements. The --inline-code-* pill vars
+              // are left unset so the highlightOverrides rules fall back to
+              // their transparent/zero defaults.
               '--text-color': theme.colors.accent,
-              '--inline-code-bg': theme.colors.muted,
-              '--inline-code-padding': '0.1em 0.35em',
-              '--inline-code-radius': `${theme.radii[1]}px`,
             } as React.CSSProperties
           }
           className={cleanClassName ? `inline-code ${cleanClassName}` : 'inline-code'}

@@ -105,6 +105,7 @@ export interface IndustryMarkdownSlideProps {
 
   // === Event Handlers ===
   onLinkClick?: (href: string, event?: MouseEvent) => void;
+  onLinkInfoClick?: (href: string, event?: MouseEvent) => void;
   onCheckboxChange?: (slideIndex: number, lineNumber: number, checked: boolean) => void;
   onCopyMermaidError?: (mermaidCode: string, errorMessage: string) => void;
   onShowMermaidInPanel?: (code: string, title?: string) => void;
@@ -651,6 +652,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
 
   // === Event Handlers ===
   onLinkClick,
+  onLinkInfoClick,
   onCheckboxChange,
   onCopyMermaidError,
   onShowMermaidInPanel,
@@ -1204,6 +1206,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         slideIdPrefix,
         slideIndex,
         onLinkClick,
+        onLinkInfoClick,
         onCheckboxChange,
         checkedItems,
         setCheckedItems,
@@ -1249,6 +1252,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       slideIdPrefix,
       slideIndex,
       onLinkClick,
+      onLinkInfoClick,
       onCheckboxChange,
       checkedItems,
       setCheckedItems,

@@ -26,6 +26,7 @@ export interface DocumentViewProps {
   enableKeyboardScrolling?: boolean;
   autoFocusOnVisible?: boolean;
   onLinkClick?: (href: string, event?: MouseEvent) => void;
+  onLinkInfoClick?: (href: string, event?: MouseEvent) => void;
   handleRunBashCommand?: (
     command: string,
     options?: BashCommandOptions,
@@ -61,6 +62,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
   enableKeyboardScrolling = true,
   autoFocusOnVisible = true,
   onLinkClick,
+  onLinkInfoClick,
   handleRunBashCommand,
   handlePromptCopy,
   repositoryInfo,
@@ -105,6 +107,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           enableKeyboardScrolling={enableKeyboardScrolling}
           autoFocusOnVisible={autoFocusOnVisible}
           onLinkClick={onLinkClick}
+          onLinkInfoClick={onLinkInfoClick}
           handleRunBashCommand={handleRunBashCommand}
           fontSizeScale={fontSizeScale}
           handlePromptCopy={handlePromptCopy}
