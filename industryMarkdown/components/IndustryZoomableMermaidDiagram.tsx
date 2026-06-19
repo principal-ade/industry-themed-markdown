@@ -180,7 +180,7 @@ export function IndustryZoomableMermaidDiagram({
         width: '100%',
         height: '100%',
         position: 'relative',
-        backgroundColor: theme.colors.background,
+        backgroundColor: theme.colors.backgroundSecondary,
       }}
     >
       <TransformWrapper
@@ -240,7 +240,7 @@ export function IndustryZoomableMermaidDiagram({
                 wrapperStyle={{
                   width: '100%',
                   height: '100%',
-                  backgroundColor: theme.colors.background,
+                  backgroundColor: theme.colors.backgroundSecondary,
                   overflow: 'hidden', // Contain the content
                 }}
                 contentStyle={{

@@ -128,62 +128,10 @@ export function IndustryMermaidDiagram({
       if (!mermaid || !containerElement) return;
 
       try {
-        // Configure mermaid with theme colors
-        // Create a slightly contrasted background for better visibility
-        // Use backgroundSecondary for consistency between modal and inline views
-        const diagramBackground = isModalMode
-          ? 'transparent'
-          : theme.colors.backgroundSecondary || theme.colors.background;
-        const nodeBackground =
-          theme.colors.backgroundTertiary ||
-          theme.colors.backgroundSecondary ||
-          theme.colors.primary + '22';
-
+        // Use mermaid's built-in default palette — no themeVariables overrides.
         mermaid.initialize({
           startOnLoad: false,
-          theme: 'base',
-          themeVariables: {
-            // Primary node colors
-            primaryColor: nodeBackground,
-            primaryTextColor: theme.colors.text,
-            primaryBorderColor: theme.colors.border,
-
-            // Secondary and tertiary colors
-            secondaryColor: theme.colors.secondary + '44', // Add some transparency
-            tertiaryColor: theme.colors.accent + '44',
-
-            // Backgrounds
-            background: diagramBackground,
-            mainBkg: nodeBackground,
-            secondBkg: theme.colors.backgroundSecondary || theme.colors.muted,
-            tertiaryBkg: theme.colors.backgroundTertiary || theme.colors.accent + '22',
-            altBackground: theme.colors.muted,
-
-            // Cluster/Subgraph specific - ensure good contrast
-            clusterBkg:
-              theme.colors.muted ||
-              theme.colors.backgroundTertiary ||
-              theme.colors.backgroundSecondary,
-            clusterBorder: theme.colors.border,
-            titleColor: theme.colors.text,
-
-            // Borders
-            lineColor: theme.colors.border,
-            secondaryBorderColor: theme.colors.border,
-            tertiaryBorderColor: theme.colors.accent,
-
-            // Text colors - ensure they work on various backgrounds
-            textColor: theme.colors.text,
-            labelTextColor: theme.colors.text,
-            nodeTextColor: theme.colors.text,
-
-            // Edge label styling
-            edgeLabelBackground: theme.colors.background,
-
-            // Error styling
-            errorBkgColor: theme.colors.error + '33',
-            errorTextColor: theme.colors.error,
-          },
+          theme: 'default',
           securityLevel: 'loose',
           logLevel: 'error',
         });

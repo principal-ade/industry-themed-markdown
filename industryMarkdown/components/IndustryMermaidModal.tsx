@@ -66,7 +66,7 @@ export function IndustryMermaidModal({
         onClick={e => e.stopPropagation()}
         style={{
           position: 'relative',
-          backgroundColor: theme.colors.background, // Keep theme background
+          backgroundColor: theme.colors.backgroundSecondary, // Match the inline diagram surface
           borderRadius: theme.radii[3],
           padding: 0, // No padding to maximize diagram space
           width: '95vw',
@@ -95,6 +95,7 @@ export function IndustryMermaidModal({
             lineHeight: 1,
             padding: `${theme.space[1]}px`,
             borderRadius: theme.radii[1],
+            boxSizing: 'border-box', // keep the hit box exactly 32×32 regardless of host box-sizing
             width: '32px',
             height: '32px',
             display: 'flex',
@@ -119,7 +120,7 @@ export function IndustryMermaidModal({
             flex: 1,
             overflow: 'hidden',
             position: 'relative',
-            backgroundColor: theme.colors.background,
+            backgroundColor: theme.colors.backgroundSecondary,
             padding: `${theme.space[5]}px ${theme.space[2]}px ${theme.space[2]}px ${theme.space[2]}px`, // Add top padding to avoid X button
           }}
         >
