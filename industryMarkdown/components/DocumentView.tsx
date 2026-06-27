@@ -33,6 +33,8 @@ export interface DocumentViewProps {
   ) => Promise<BashCommandResult>;
   handlePromptCopy?: (filledPrompt: string) => void;
   repositoryInfo?: RepositoryInfo;
+  /** Extra URI schemes to allow on link hrefs (e.g. `['pkg']`). See IndustryMarkdownSlide. */
+  allowedLinkProtocols?: string[];
   fontSizeScale?: number;
   theme: Theme;
   transparentBackground?: boolean;
@@ -66,6 +68,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
   handleRunBashCommand,
   handlePromptCopy,
   repositoryInfo,
+  allowedLinkProtocols,
   fontSizeScale,
   theme,
   transparentBackground = false,
@@ -112,6 +115,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           fontSizeScale={fontSizeScale}
           handlePromptCopy={handlePromptCopy}
           repositoryInfo={repositoryInfo}
+          allowedLinkProtocols={allowedLinkProtocols}
           transparentBackground={transparentBackground}
           editable={editable}
           containerWidth={width}

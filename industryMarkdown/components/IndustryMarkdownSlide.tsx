@@ -168,6 +168,14 @@ export interface IndustryMarkdownSlideProps {
    * repository-relative resolution otherwise.
    */
   transformImageUri?: (src: string) => string;
+  /**
+   * Extra URI schemes to allow on link (`href`) destinations, on top of the
+   * sanitizer defaults (`http`, `https`, `mailto`, …). Without this, links using
+   * a custom scheme — e.g. `pkg:github/owner/repo#path` for purl-qualified doc
+   * links — have their `href` stripped by sanitize and never reach
+   * `onLinkClick`. Pass e.g. `['pkg']` so the host can resolve them on click.
+   */
+  allowedLinkProtocols?: string[];
 
   // === Editing ===
   editable?: boolean; // When true, checkboxes are interactive. Default: false
@@ -688,6 +696,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   // === External Data ===
   repositoryInfo,
   transformImageUri,
+  allowedLinkProtocols,
 
   // === Editing ===
   editable = false,
@@ -1100,11 +1109,18 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       // allow-list so custom schemes (e.g. `asset://<hash>`) survive sanitize
       // and reach the resolver. Image `src` is inert against script execution,
       // and the resolved value is fully controlled by the host's resolver.
-      protocols: transformImageUri
-        ? Object.fromEntries(
-            Object.entries(defaultSchema.protocols ?? {}).filter(([key]) => key !== 'src'),
-          )
-        : defaultSchema.protocols,
+      protocols: (() => {
+        // Clone so we never mutate the shared `defaultSchema.protocols`.
+        const base: Record<string, string[] | null | undefined> = transformImageUri
+          ? Object.fromEntries(
+              Object.entries(defaultSchema.protocols ?? {}).filter(([key]) => key !== 'src'),
+            )
+          : { ...(defaultSchema.protocols ?? {}) };
+        if (allowedLinkProtocols && allowedLinkProtocols.length > 0) {
+          base.href = [...(base.href ?? []), ...allowedLinkProtocols];
+        }
+        return base;
+      })(),
       tagNames: [...(defaultSchema.tagNames || []), 'picture', 'source', 'mark'],
       attributes: {
         ...defaultSchema.attributes,
@@ -1174,7 +1190,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         section: [...(defaultSchema.attributes?.section || []), 'style', 'className'],
       },
     }),
-    [transformImageUri],
+    [transformImageUri, allowedLinkProtocols],
   );
 
   // Use component theme for lazy loading margins
