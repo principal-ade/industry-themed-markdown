@@ -1295,20 +1295,35 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     blockDeletionEnabled && deletionMode === 'text' && !searchQuery;
 
   // react-markdown runs `defaultUrlTransform` on every `src`/`href`, which
-  // strips custom schemes like `asset://` to an empty string before our `img`
-  // component can resolve them. When a host resolver is set, pass image `src`
-  // values through untouched so `transformImageUri` (applied in
-  // OptimizedMarkdownMedia) sees the raw reference; everything else keeps the
-  // default sanitizing behaviour.
+  // strips custom schemes (e.g. `asset://`, `pkg:`) to an empty string before
+  // our components see them. Two passthroughs:
+  //  - image `src` (when `transformImageUri` is set) so the host resolver gets
+  //    the raw reference;
+  //  - link `href` whose scheme is in `allowedLinkProtocols` (e.g. `pkg:` for
+  //    purl doc links) so it survives to `onLinkClick`.
+  // Everything else keeps the default sanitizing behaviour. NOTE: this is the
+  // companion to the sanitize-schema `protocols` relaxation above — react-markdown
+  // strips here *before* rehype-sanitize runs, so both must allow the scheme.
   const urlTransform = useMemo(() => {
-    if (!transformImageUri) return undefined;
+    const hasImagePassthrough = !!transformImageUri;
+    const linkProtocols = (allowedLinkProtocols ?? []).map((p) => p.toLowerCase());
+    if (!hasImagePassthrough && linkProtocols.length === 0) return undefined;
     return (url: string, key: string, node: { tagName?: string }) => {
-      if (key === 'src' || node?.tagName === 'img' || node?.tagName === 'source') {
+      if (
+        hasImagePassthrough &&
+        (key === 'src' || node?.tagName === 'img' || node?.tagName === 'source')
+      ) {
         return url;
+      }
+      if (key === 'href' && linkProtocols.length > 0) {
+        const colon = url.indexOf(':');
+        if (colon > 0 && linkProtocols.includes(url.slice(0, colon).toLowerCase())) {
+          return url;
+        }
       }
       return defaultUrlTransform(url);
     };
-  }, [transformImageUri]);
+  }, [transformImageUri, allowedLinkProtocols]);
 
   const rehypePlugins = useMemo(() => {
     const plugins: React.ComponentProps<typeof ReactMarkdown>['rehypePlugins'] = [
