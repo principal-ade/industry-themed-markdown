@@ -76,6 +76,23 @@ const isVideoUrl = (url: string, alt?: string): boolean => {
     return true;
   }
 
+  // An explicit image extension wins over the alt-text heuristic below — e.g. a
+  // GIF whose alt text says "demo" is still an image, not a video.
+  const imageExtensions = [
+    '.gif',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.svg',
+    '.webp',
+    '.avif',
+    '.bmp',
+    '.ico',
+  ];
+  if (imageExtensions.some(ext => lowercaseUrl.includes(ext))) {
+    return false;
+  }
+
   // Check alt text for hints that this is a video
   if (alt) {
     const altLower = alt.toLowerCase();
@@ -104,6 +121,8 @@ const OptimizedMarkdownMedia = React.memo(
     repositoryInfo?: RepositoryInfo;
     transformImageUri?: (src: string) => string;
     theme: Theme;
+    width?: string | number;
+    height?: string | number;
   }) => {
     const transformedSrc = useMemo(() => {
       // Host resolver wins when it returns a value (e.g. `asset://<hash>` →
@@ -116,16 +135,30 @@ const OptimizedMarkdownMedia = React.memo(
     const [hasErrored, setHasErrored] = useState(() => failedImageCache.has(transformedSrc));
     const retryCount = useRef(0);
 
+    // An image with explicit dimensions is an inline HTML icon (e.g.
+    // `## <img ... width="28" height="28"> Heading`), not a standalone figure —
+    // render it inline so it sits alongside the surrounding text rather than
+    // dropping onto its own centered row.
+    const hasExplicitSize = props.width !== undefined || props.height !== undefined;
+
     const mediaStyle = useMemo(
-      () => ({
-        maxWidth: '100%',
-        height: 'auto',
-        display: 'block',
-        margin: `${theme.space[3]}px auto`,
-        borderRadius: theme.radii[1],
-        boxShadow: theme.shadows[2],
-      }),
-      [theme],
+      () =>
+        hasExplicitSize
+          ? {
+              maxWidth: '100%',
+              display: 'inline-block',
+              verticalAlign: 'middle',
+              borderRadius: theme.radii[1],
+            }
+          : {
+              maxWidth: '100%',
+              height: 'auto',
+              display: 'block',
+              margin: `${theme.space[3]}px auto`,
+              borderRadius: theme.radii[1],
+              boxShadow: theme.shadows[2],
+            },
+      [theme, hasExplicitSize],
     );
 
     const handleLoad = () => {
