@@ -106,6 +106,20 @@ const isVideoUrl = (url: string, alt?: string): boolean => {
   return false;
 };
 
+// Normalize an HTML width/height value into a CSS length. The HTML width/height
+// *attributes* only accept unitless pixel integers, so `height="14px"` (with a
+// unit) is invalid and silently ignored by the browser — the image then renders
+// at its intrinsic size. Feeding the value through CSS (which does accept units)
+// honors the author's intent for `14`, `"14"`, `"14px"`, `"50%"`, `"auto"`, etc.
+const toCssLength = (value: string | number | undefined): string | undefined => {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'number') return `${value}px`;
+  const trimmed = value.trim();
+  // A bare number (optionally decimal) is pixels; anything with a unit/keyword
+  // is already a valid CSS length and passes through untouched.
+  return /^\d+(\.\d+)?$/.test(trimmed) ? `${trimmed}px` : trimmed;
+};
+
 // Optimized media component (handles both images and videos)
 const OptimizedMarkdownMedia = React.memo(
   ({
@@ -140,6 +154,8 @@ const OptimizedMarkdownMedia = React.memo(
     // render it inline so it sits alongside the surrounding text rather than
     // dropping onto its own centered row.
     const hasExplicitSize = props.width !== undefined || props.height !== undefined;
+    const explicitWidth = toCssLength(props.width);
+    const explicitHeight = toCssLength(props.height);
 
     const mediaStyle = useMemo(
       () =>
@@ -149,6 +165,10 @@ const OptimizedMarkdownMedia = React.memo(
               display: 'inline-block',
               verticalAlign: 'middle',
               borderRadius: theme.radii[1],
+              // Apply the requested size via CSS so units (e.g. `14px`) are
+              // honored — the HTML width/height attributes reject them.
+              ...(explicitWidth ? { width: explicitWidth } : {}),
+              ...(explicitHeight ? { height: explicitHeight } : {}),
             }
           : {
               maxWidth: '100%',
@@ -158,7 +178,7 @@ const OptimizedMarkdownMedia = React.memo(
               borderRadius: theme.radii[1],
               boxShadow: theme.shadows[2],
             },
-      [theme, hasExplicitSize],
+      [theme, hasExplicitSize, explicitWidth, explicitHeight],
     );
 
     const handleLoad = () => {
