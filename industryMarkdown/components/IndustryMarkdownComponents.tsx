@@ -6,7 +6,7 @@ import {
   parseBashCommands,
 } from '@principal-ade/markdown-utils';
 import { Copy, Monitor, FileText, Check, Info } from 'lucide-react';
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useContext } from 'react';
 
 import {
   MarkdownComponentProps,
@@ -120,6 +120,35 @@ const toCssLength = (value: string | number | undefined): string | undefined => 
   return /^\d+(\.\d+)?$/.test(trimmed) ? `${trimmed}px` : trimmed;
 };
 
+// Signals to media descendants that they sit in a horizontal image row (e.g. a
+// badge strip) and should render inline rather than as their own centered
+// block. Set by the `p`/`div` components when they detect such a row.
+const InlineMediaContext = React.createContext(false);
+
+// A block whose meaningful children are all images (2+) is a media row — a
+// badge strip or a line of screenshots — not a standalone figure. Count image
+// descendants so those images can flow inline instead of each dropping onto its
+// own centered line. Walks through wrapper elements (e.g. the `<a>` around each
+// badge) but treats `<img>`/`<picture>` as leaves.
+const MEDIA_ROW_MIN_IMAGES = 2;
+const countImageDescendants = (node: unknown): number => {
+  if (!node || typeof node !== 'object') return 0;
+  const children = (node as { children?: unknown[] }).children;
+  if (!Array.isArray(children)) return 0;
+  let count = 0;
+  for (const child of children) {
+    if (!child || typeof child !== 'object') continue;
+    const el = child as { type?: string; tagName?: string };
+    if (el.type !== 'element') continue;
+    if (el.tagName === 'img' || el.tagName === 'picture') {
+      count += 1;
+    } else {
+      count += countImageDescendants(child);
+    }
+  }
+  return count;
+};
+
 // Optimized media component (handles both images and videos)
 const OptimizedMarkdownMedia = React.memo(
   ({
@@ -157,9 +186,16 @@ const OptimizedMarkdownMedia = React.memo(
     const explicitWidth = toCssLength(props.width);
     const explicitHeight = toCssLength(props.height);
 
+    // Inside a detected image row (e.g. a badge strip) images flow inline so the
+    // row stays on one line and wraps, rather than each image claiming its own
+    // centered block. An image with explicit dimensions is likewise an inline
+    // icon. Everything else is a standalone figure: centered block + shadow.
+    const inlineMedia = useContext(InlineMediaContext);
+    const renderInline = hasExplicitSize || inlineMedia;
+
     const mediaStyle = useMemo(
       () =>
-        hasExplicitSize
+        renderInline
           ? {
               maxWidth: '100%',
               display: 'inline-block',
@@ -178,7 +214,7 @@ const OptimizedMarkdownMedia = React.memo(
               borderRadius: theme.radii[1],
               boxShadow: theme.shadows[2],
             },
-      [theme, hasExplicitSize, explicitWidth, explicitHeight],
+      [theme, renderInline, explicitWidth, explicitHeight],
     );
 
     const handleLoad = () => {
@@ -455,21 +491,48 @@ export const createIndustryMarkdownComponents = ({
     ),
 
     // Paragraphs
-    p: ({ children, node, ...props }: MarkdownComponentProps) => (
-      <p
-        style={{
-          color: theme.colors.text,
-          fontSize: theme.fontSizes[2],
-          lineHeight: theme.lineHeights.body,
-          marginBottom: theme.space[3],
-          fontFamily: theme.fonts.body,
-        }}
-        {...props}
-        {...blockMeta(node)}
-      >
-        {children}
-      </p>
-    ),
+    p: ({ children, node, ...props }: MarkdownComponentProps) => {
+      // A paragraph whose content is a strip of images (e.g. `<p align="center">`
+      // full of shields.io badges) should lay them out in a wrapping horizontal
+      // row instead of letting each image drop onto its own centered line.
+      if (countImageDescendants(node) >= MEDIA_ROW_MIN_IMAGES) {
+        const align = (props as { align?: string }).align;
+        const justifyContent =
+          align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
+        return (
+          <p
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent,
+              gap: theme.space[2],
+              marginBottom: theme.space[3],
+              fontFamily: theme.fonts.body,
+            }}
+            {...props}
+            {...blockMeta(node)}
+          >
+            <InlineMediaContext.Provider value={true}>{children}</InlineMediaContext.Provider>
+          </p>
+        );
+      }
+      return (
+        <p
+          style={{
+            color: theme.colors.text,
+            fontSize: theme.fontSizes[2],
+            lineHeight: theme.lineHeights.body,
+            marginBottom: theme.space[3],
+            fontFamily: theme.fonts.body,
+          }}
+          {...props}
+          {...blockMeta(node)}
+        >
+          {children}
+        </p>
+      );
+    },
 
     // Lists
     ul: ({ children, node, ...props }: MarkdownComponentProps) => (
