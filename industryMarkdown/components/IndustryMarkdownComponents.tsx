@@ -504,8 +504,7 @@ export const createIndustryMarkdownComponents = ({
       // row instead of letting each image drop onto its own centered line.
       if (countImageDescendants(node) >= MEDIA_ROW_MIN_IMAGES) {
         const align = (props as { align?: string }).align;
-        const justifyContent =
-          align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
+        const justifyContent = align === 'right' ? 'flex-end' : 'center';
         return (
           <p
             style={{
