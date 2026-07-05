@@ -32,6 +32,12 @@ interface IndustryMarkdownComponentsProps {
   slideIdPrefix: string;
   slideIndex: number;
   onLinkClick?: (href: string, event?: MouseEvent) => void;
+  /**
+   * Called when a #fragment link is clicked, after the default scroll-to-heading
+   * behavior has run. Provided by IndustryMarkdownSlide so section links scroll
+   * the slide container out of the box.
+   */
+  onSectionLinkClick?: (href: string) => void;
   // Fired by the info icon revealed on hover of an internal-link pill. Distinct
   // from `onLinkClick` (navigate) — this opens information/preview about the link.
   onLinkInfoClick?: (href: string, event?: MouseEvent) => void;
@@ -325,6 +331,7 @@ export const createIndustryMarkdownComponents = ({
   slideIdPrefix,
   slideIndex,
   onLinkClick,
+  onSectionLinkClick,
   onLinkInfoClick,
   onCheckboxChange,
   checkedItems,
@@ -813,8 +820,31 @@ export const createIndustryMarkdownComponents = ({
     // the host — get the pill treatment (themed background + padding + radius,
     // no underline) so "goes somewhere in our world" reads differently from
     // "leaves to the browser".
+    // Section links (#fragment) are rendered as plain anchors so they scroll
+    // in-page instead of opening a new tab.
     a: ({ children, href, ...props }: LinkProps) => {
-      const external = isExternalLink(href || '');
+      const isSectionLink = href?.startsWith('#');
+      const external = !isSectionLink && isExternalLink(href || '');
+
+      // Section links — scroll to the matching heading by default. No new tab,
+      // no pill. The host's onLinkClick is still called so they can augment the
+      // behavior (e.g. analytics).
+      if (isSectionLink) {
+        return (
+          <a
+            href={href}
+            onClick={(e) => {
+              e.preventDefault();
+              onSectionLinkClick?.(href || '');
+              onLinkClick?.(href || '', e as unknown as MouseEvent);
+            }}
+            className={props.className}
+            style={{ color: theme.colors.primary, textDecoration: 'underline' }}
+          >
+            {children}
+          </a>
+        );
+      }
 
       // External links keep the plain underlined look — no pill, no hover nub.
       if (external) {

@@ -1214,6 +1214,32 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     [content, chunks, onContentChange, onDeleteBlocks],
   );
 
+  // Handle #fragment links by scrolling to the matching heading. Always
+  // attached regardless of whether the host provides onLinkClick, so section
+  // links work out of the box.
+  const handleSectionLinkClick = useCallback((href: string) => {
+    const id = href.startsWith('#') ? href.slice(1) : href;
+    const container = slideRef.current;
+    if (!container) return;
+    const target = container.querySelector(`[id="${id}"]`) as HTMLElement | null;
+    if (target) {
+      const isFirstHeading =
+        target === container.querySelector('h1, h2, h3, h4, h5, h6');
+      if (isFirstHeading) {
+        // The target is the first heading in the slide — just scroll to the top
+        // of the component rather than the heading itself.
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Scroll the target's border-box to the container's border-box top.
+        const targetRect = target.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const scrollTarget =
+          targetRect.top - containerRect.top + container.scrollTop;
+        container.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+      }
+    }
+  }, []);
+
   // Create a function to get markdown components for each chunk index
   const getMarkdownComponents = useCallback(
     (chunkIndex: number) => {
@@ -1222,6 +1248,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
         slideIdPrefix,
         slideIndex,
         onLinkClick,
+        onSectionLinkClick: handleSectionLinkClick,
         onLinkInfoClick,
         onCheckboxChange,
         checkedItems,
@@ -1268,6 +1295,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       slideIdPrefix,
       slideIndex,
       onLinkClick,
+      handleSectionLinkClick,
       onLinkInfoClick,
       onCheckboxChange,
       checkedItems,
@@ -1548,7 +1576,7 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
       onKeyDown={handleSlideKeyDown}
       onClick={() => {
         if (slideRef.current) {
-          slideRef.current.focus();
+          slideRef.current.focus({ preventScroll: true });
         }
       }}
     >

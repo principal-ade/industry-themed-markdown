@@ -715,7 +715,7 @@ The diagrams above should scale with the font size controls. Try different scali
     onShowMermaidInPanel: undefined,
     // showMermaidFitToggle removed - now each diagram has individual zoom controls
   },
-  argTypes: {
+    argTypes: {
     fontSizeScale: {
       control: {
         type: 'range',
@@ -724,6 +724,86 @@ The diagrams above should scale with the font size controls. Try different scali
         step: 0.1,
       },
       description: 'Scale factor for font sizes in the Mermaid diagrams',
+    },
+  },
+};
+
+// ── Section Links ──────────────────────────────────────────────────────────────
+
+const sectionLinksContent = `# Section Links Demo
+
+Use the links below to jump between sections. Each section is separated by enough vertical space to make the scroll visible.
+
+[Jump to Section A](#section-a) · [Jump to Section B](#section-b) · [Jump to Section C](#section-c)
+
+## Section A
+
+This is the first section. Clicking the link above should scroll the slide so this heading is visible at the top.
+
+> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+## Section B
+
+This is the middle section. Clicking the link for this section should scroll here.
+
+> Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+## Section C
+
+This is the last section. Each link scrolls the slide to the matching heading without opening a new tab.
+
+> Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+
+[Back to top](#section-links-demo)
+`;
+
+export const SectionLinks: Story = {
+  args: {
+    content: sectionLinksContent,
+    slideIdPrefix: 'section-links',
+    slideIndex: 0,
+    isVisible: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates how `#fragment` links scroll to their matching heading. The component handles these by default — no host `onLinkClick` required.',
+      },
     },
   },
 };
