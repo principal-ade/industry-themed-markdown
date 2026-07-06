@@ -57,6 +57,12 @@ export const LinkWithLoadingIndicator: React.FC<{
   style,
 }) => {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    console.log('[LinkWithLoadingIndicator] click', {
+      href,
+      hasOnClick: !!onClick,
+      willPreventDefault: !!onClick,
+      target: '_blank',
+    });
     if (onClick) {
       e.preventDefault();
       onClick(href, e);

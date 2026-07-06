@@ -96,6 +96,21 @@ import { createIndustryMarkdownComponents } from './IndustryMarkdownComponents';
 import { IndustryMermaidModal } from './IndustryMermaidModal';
 import { IndustryPlaceholderModal } from './IndustryPlaceholderModal';
 
+/**
+ * Walk up from `el` to find the nearest ancestor that can actually scroll
+ * (has `overflow-y: auto` or `overflow-y: scroll`). Falls back to `el`
+ * itself if nothing above it is scrollable.
+ */
+function findScrollContainer(el: HTMLElement): HTMLElement {
+  let current: HTMLElement | null = el;
+  while (current) {
+    const overflowY = getComputedStyle(current).overflowY;
+    if (overflowY === 'auto' || overflowY === 'scroll') return current;
+    current = current.parentElement;
+  }
+  return el;
+}
+
 export interface IndustryMarkdownSlideProps {
   // === Core Properties ===
   content: string;
@@ -1219,23 +1234,21 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
   // links work out of the box.
   const handleSectionLinkClick = useCallback((href: string) => {
     const id = href.startsWith('#') ? href.slice(1) : href;
-    const container = slideRef.current;
-    if (!container) return;
-    const target = container.querySelector(`[id="${id}"]`) as HTMLElement | null;
+    const root = slideRef.current;
+    if (!root) return;
+    const scrollContainer = findScrollContainer(root);
+    const target = root.querySelector(`[id="${id}"]`) as HTMLElement | null;
     if (target) {
       const isFirstHeading =
-        target === container.querySelector('h1, h2, h3, h4, h5, h6');
+        target === root.querySelector('h1, h2, h3, h4, h5, h6');
       if (isFirstHeading) {
-        // The target is the first heading in the slide — just scroll to the top
-        // of the component rather than the heading itself.
-        container.scrollTo({ top: 0, behavior: 'smooth' });
+        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        // Scroll the target's border-box to the container's border-box top.
         const targetRect = target.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
+        const containerRect = scrollContainer.getBoundingClientRect();
         const scrollTarget =
-          targetRect.top - containerRect.top + container.scrollTop;
-        container.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+          targetRect.top - containerRect.top + scrollContainer.scrollTop;
+        scrollContainer.scrollTo({ top: scrollTarget, behavior: 'smooth' });
       }
     }
   }, []);

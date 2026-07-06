@@ -834,6 +834,11 @@ export const createIndustryMarkdownComponents = ({
             href={href}
             onClick={(e) => {
               e.preventDefault();
+              console.log('[IndustryMarkdownComponents] section link clicked', {
+                href,
+                hasOnSectionLinkClick: !!onSectionLinkClick,
+                hasOnLinkClick: !!onLinkClick,
+              });
               onSectionLinkClick?.(href || '');
               onLinkClick?.(href || '', e as unknown as MouseEvent);
             }}
