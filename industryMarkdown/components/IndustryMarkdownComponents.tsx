@@ -126,6 +126,19 @@ const toCssLength = (value: string | number | undefined): string | undefined => 
   return /^\d+(\.\d+)?$/.test(trimmed) ? `${trimmed}px` : trimmed;
 };
 
+// Maximum dimension (in px) below which an image with explicit width/height is
+// considered a small inline icon rather than a standalone figure. Images larger
+// than this threshold use the block-level centered figure styling that scales
+// properly inside narrow containers.
+const INLINE_ICON_SIZE_THRESHOLD = 100;
+
+const parseNumericProp = (value: string | number | undefined): number | undefined => {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'number') return value;
+  const match = String(value).trim().match(/^(\d+)/);
+  return match ? Number(match[1]) : undefined;
+};
+
 // Signals to media descendants that they sit in a horizontal image row (e.g. a
 // badge strip) and should render inline rather than as their own centered
 // block. Set by the `p`/`div` components when they detect such a row.
@@ -184,20 +197,26 @@ const OptimizedMarkdownMedia = React.memo(
     const [hasErrored, setHasErrored] = useState(() => failedImageCache.has(transformedSrc));
     const retryCount = useRef(0);
 
-    // An image with explicit dimensions is an inline HTML icon (e.g.
-    // `## <img ... width="28" height="28"> Heading`), not a standalone figure —
-    // render it inline so it sits alongside the surrounding text rather than
-    // dropping onto its own centered row.
     const hasExplicitSize = props.width !== undefined || props.height !== undefined;
     const explicitWidth = toCssLength(props.width);
     const explicitHeight = toCssLength(props.height);
 
+    // Small inline icons (both dimensions <= INLINE_ICON_SIZE_THRESHOLD) are
+    // rendered inline so they sit alongside headings and text. Images larger
+    // than this threshold are standalone figures that use block-level centered
+    // styling with automatic aspect-ratio preservation.
+    const nw = parseNumericProp(props.width);
+    const nh = parseNumericProp(props.height);
+    const isSmallIcon =
+      hasExplicitSize && nw !== undefined && nh !== undefined &&
+      nw <= INLINE_ICON_SIZE_THRESHOLD && nh <= INLINE_ICON_SIZE_THRESHOLD;
+
     // Inside a detected image row (e.g. a badge strip) images flow inline so the
     // row stays on one line and wraps, rather than each image claiming its own
-    // centered block. An image with explicit dimensions is likewise an inline
-    // icon. Everything else is a standalone figure: centered block + shadow.
+    // centered block. Small icons also render inline. Everything else is a
+    // standalone figure: centered block + shadow.
     const inlineMedia = useContext(InlineMediaContext);
-    const renderInline = hasExplicitSize || inlineMedia;
+    const renderInline = isSmallIcon || inlineMedia;
 
     const mediaStyle = useMemo(
       () =>
@@ -789,26 +808,25 @@ export const createIndustryMarkdownComponents = ({
     ),
     th: ({ children, ...props }: MarkdownComponentProps) => (
       <th
+        {...props}
         style={{
           padding: theme.space[3],
-          textAlign: 'left',
           fontWeight: theme.fontWeights.semibold,
           borderBottom: `2px solid ${theme.colors.border}`,
           color: theme.colors.text,
         }}
-        {...props}
       >
         {children}
       </th>
     ),
     td: ({ children, ...props }: MarkdownComponentProps) => (
       <td
+        {...props}
         style={{
           padding: theme.space[3],
           borderBottom: `1px solid ${theme.colors.border}`,
           color: theme.colors.text,
         }}
-        {...props}
       >
         {children}
       </td>
