@@ -1366,12 +1366,32 @@ export const IndustryMarkdownSlide = React.memo(function IndustryMarkdownSlide({
     };
   }, [transformImageUri, allowedLinkProtocols]);
 
+  // Strip CSS properties that GitHub's README sanitizer rejects, so inline
+  // HTML in markdown sources renders at parity with github.com. Add properties
+  // here as we discover they differ.
+  function rehypeGithubStyle() {
+    const stripProps = /(?:^|;\s*)(?:transform|-webkit-transform|-moz-transform|-ms-transform|-o-transform)\s*:[^;]*;?/gi;
+    return (tree: any) => {
+      function walk(node: any) {
+        if (node?.properties?.style && typeof node.properties.style === 'string') {
+          node.properties.style = node.properties.style.replace(stripProps, '').trim();
+          if (node.properties.style.endsWith(';')) {
+            node.properties.style = node.properties.style.slice(0, -1).trim();
+          }
+        }
+        if (node?.children) node.children.forEach(walk);
+      }
+      walk(tree);
+    };
+  }
+
   const rehypePlugins = useMemo(() => {
     const plugins: React.ComponentProps<typeof ReactMarkdown>['rehypePlugins'] = [
       rehypeRaw,
       [rehypeSanitize, sanitizeSchema],
       rehypeSlug,
       rehypeHighlight,
+      rehypeGithubStyle,
       // Stamp each <code> with an explicit inline/block flag (read by the
       // `code` component) so it doesn't have to guess. Must run after
       // rehypeSanitize so the `dataInline` property survives.
