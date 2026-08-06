@@ -44,10 +44,6 @@ export function IndustryZoomableMermaidDiagram({
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
 
-  // Sequence diagrams are usually larger than the panel, so auto-fit shrinks
-  // them below a readable scale. Render them at natural size instead.
-  const isSequenceDiagram = /^\s*sequenceDiagram\b/m.test(code);
-
   const [calculatedScale, setCalculatedScale] = useState(1); // Start at 1, will be recalculated
   const [hasInitialized, setHasInitialized] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -85,7 +81,7 @@ export function IndustryZoomableMermaidDiagram({
       if (!container || !diagram) return;
 
       // Skip auto-fit scaling and render at natural size
-      if (disableFit || isSequenceDiagram) {
+      if (disableFit) {
         setCalculatedScale(1);
         setHasInitialized(true);
         setIsCalculating(false);
