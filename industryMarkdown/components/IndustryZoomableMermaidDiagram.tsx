@@ -26,6 +26,10 @@ interface IndustryZoomableMermaidDiagramProps {
   theme?: Theme;
   fitStrategy?: 'contain' | 'width' | 'height';
   padding?: number;
+  /** When true, skips auto-fit scaling and renders the diagram at natural size */
+  disableFit?: boolean;
+  /** Minimum time in ms the reveal overlay stays up (default: 300) */
+  overlayMinDurationMs?: number;
 }
 
 export function IndustryZoomableMermaidDiagram({
@@ -34,15 +38,37 @@ export function IndustryZoomableMermaidDiagram({
   theme: themeOverride,
   fitStrategy = 'contain',
   padding = 0.9, // Use 90% of available space to leave some breathing room
+  disableFit = false,
+  overlayMinDurationMs = 300,
 }: IndustryZoomableMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
+
+  // Sequence diagrams are usually larger than the panel, so auto-fit shrinks
+  // them below a readable scale. Render them at natural size instead.
+  const isSequenceDiagram = /^\s*sequenceDiagram\b/m.test(code);
 
   const [calculatedScale, setCalculatedScale] = useState(1); // Start at 1, will be recalculated
   const [hasInitialized, setHasInitialized] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const diagramRef = useRef<HTMLDivElement>(null);
   const [isCalculating, setIsCalculating] = useState(true);
+  const [isRevealed, setIsRevealed] = useState(false);
+  // Hide the diagram behind an overlay while a new diagram is being fitted.
+  // Reset during render (not in an effect) so the overlay covers the new
+  // diagram before it ever paints at the previous diagram's scale.
+  const busyStartRef = useRef<number>(typeof performance !== 'undefined' ? performance.now() : 0);
+  const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [prevCode, setPrevCode] = useState(code);
+  if (prevCode !== code) {
+    setPrevCode(code);
+    setIsRevealed(false);
+    busyStartRef.current = performance.now();
+    if (revealTimerRef.current) {
+      clearTimeout(revealTimerRef.current);
+      revealTimerRef.current = null;
+    }
+  }
   const transformRef = useRef<{
     centerView: (scale?: number, animationTime?: number, animationType?: AnimationType) => void;
     instance: { transformState: { scale: number } };
@@ -57,6 +83,14 @@ export function IndustryZoomableMermaidDiagram({
       const diagram = diagramRef.current;
 
       if (!container || !diagram) return;
+
+      // Skip auto-fit scaling and render at natural size
+      if (disableFit || isSequenceDiagram) {
+        setCalculatedScale(1);
+        setHasInitialized(true);
+        setIsCalculating(false);
+        return;
+      }
 
       // Find the SVG element that mermaid creates
       const svg = diagram.querySelector('svg');
@@ -141,16 +175,32 @@ export function IndustryZoomableMermaidDiagram({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [code, fitStrategy, padding]); // Recalculate when these change
+  }, [code, fitStrategy, padding, disableFit]); // Recalculate when these change
 
   // Apply the calculated scale once it's ready
   useEffect(() => {
     if (hasInitialized && transformRef.current) {
       const { centerView } = transformRef.current;
-      // Apply the calculated scale
+      // Apply the calculated scale (applies to the DOM synchronously),
+      // then reveal so the fitted diagram never paints at scale 1 first.
       centerView(calculatedScale, 0, 'easeOut');
+      const elapsed = performance.now() - busyStartRef.current;
+      const delay = Math.max(0, overlayMinDurationMs - elapsed);
+      if (delay > 0) {
+        if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
+        revealTimerRef.current = setTimeout(() => setIsRevealed(true), delay);
+      } else {
+        setIsRevealed(true);
+      }
     }
-  }, [hasInitialized, calculatedScale]);
+  }, [hasInitialized, calculatedScale, overlayMinDurationMs]);
+
+  // Clear any pending reveal timer on unmount
+  useEffect(() => {
+    return () => {
+      if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
+    };
+  }, []);
   const buttonStyle: React.CSSProperties = {
     padding: `${theme.space[1]}px ${theme.space[2]}px`,
     marginRight: theme.space[2],
@@ -183,6 +233,19 @@ export function IndustryZoomableMermaidDiagram({
         backgroundColor: theme.colors.backgroundSecondary,
       }}
     >
+      {!isRevealed && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 20,
+            backgroundColor: theme.colors.backgroundSecondary,
+          }}
+        />
+      )}
       <TransformWrapper
         limitToBounds={true}
         doubleClick={{ disabled: true }}
@@ -259,6 +322,8 @@ export function IndustryZoomableMermaidDiagram({
                     justifyContent: 'center',
                     width: '100%',
                     height: '100%',
+                    opacity: isRevealed ? 1 : 0,
+                    transition: 'opacity 200ms ease',
                   }}
                 >
                   <IndustryMermaidDiagram code={code} id={id} isModalMode={true} theme={theme} />

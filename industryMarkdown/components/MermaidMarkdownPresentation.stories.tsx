@@ -21,6 +21,8 @@ const meta: Meta<typeof MermaidMarkdownPresentation> = {
   },
   args: {
     theme: slateNeonTheme,
+    mermaidDisableFit: false,
+    mermaidOverlayMinDurationMs: 300,
   },
 };
 

@@ -36,6 +36,10 @@ export interface MermaidMarkdownPresentationProps {
   slideIdPrefix?: string;
   /** How the mermaid diagram fits the top panel (default: 'contain') */
   mermaidFitStrategy?: 'contain' | 'width' | 'height';
+  /** When true, renders the mermaid diagram at natural size instead of auto-fitting (default: false) */
+  mermaidDisableFit?: boolean;
+  /** Minimum time in ms the reveal overlay stays up while a diagram is being fitted (default: 300) */
+  mermaidOverlayMinDurationMs?: number;
   /** Default size of the mermaid (top) panel as a percentage (default: 70) */
   mermaidPanelDefaultSize?: number;
   /** Default size of the markdown (bottom) panel as a percentage (default: 30) */
@@ -54,6 +58,8 @@ export const MermaidMarkdownPresentation: React.FC<MermaidMarkdownPresentationPr
   showCopySlideButton = true,
   slideIdPrefix = 'mermaid-slide',
   mermaidFitStrategy = 'contain',
+  mermaidDisableFit = false,
+  mermaidOverlayMinDurationMs = 300,
   mermaidPanelDefaultSize = 70,
   markdownPanelDefaultSize = 30,
   onLinkClick,
@@ -258,6 +264,8 @@ export const MermaidMarkdownPresentation: React.FC<MermaidMarkdownPresentationPr
             id={`${slideIdPrefix}-${currentSlide}-diagram`}
             theme={theme}
             fitStrategy={mermaidFitStrategy}
+            disableFit={mermaidDisableFit}
+            overlayMinDurationMs={mermaidOverlayMinDurationMs}
           />
         </Panel>
         <Separator
