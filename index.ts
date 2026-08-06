@@ -40,6 +40,12 @@ export { IndustryMermaidModal } from './industryMarkdown/components/IndustryMerm
 export { IndustryLazyMermaidDiagram } from './industryMarkdown/components/IndustryLazyMermaidDiagram';
 export { IndustryZoomableMermaidDiagram } from './industryMarkdown/components/IndustryZoomableMermaidDiagram';
 
+export { MermaidMarkdownPresentation } from './industryMarkdown/components/MermaidMarkdownPresentation';
+export type {
+  MermaidMarkdownPresentationProps,
+  MermaidMarkdownSlide,
+} from './industryMarkdown/components/MermaidMarkdownPresentation';
+
 // Utilities
 export {
   parseMarkdownIntoPresentation,
@@ -64,10 +70,7 @@ export {
   computeTextDeletion,
   computeChunkOffsets,
 } from './industryMarkdown/utils/blockDeletion';
-export type {
-  BlockDeletionTarget,
-  ResolvedDeletion,
-} from './industryMarkdown/utils/blockDeletion';
+export type { BlockDeletionTarget, ResolvedDeletion } from './industryMarkdown/utils/blockDeletion';
 
 // Types
 export type {

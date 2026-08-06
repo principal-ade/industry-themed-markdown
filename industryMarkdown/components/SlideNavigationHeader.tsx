@@ -139,6 +139,7 @@ export const SlideNavigationHeader: React.FC<SlideNavigationHeaderProps> = ({
   onClose,
   onCollapseLeft,
   onCollapseRight,
+  additionalButtons,
 }) => {
   const navigationHeight = '48px';
 
@@ -289,6 +290,8 @@ export const SlideNavigationHeader: React.FC<SlideNavigationHeaderProps> = ({
           {!isMobile && 'Next'}
           <ChevronRight size={18} />
         </HeaderButton>
+
+        {additionalButtons}
 
         {showPopoutButton && onPopout && !isPopout && (
           <HeaderButton onClick={onPopout} theme={theme} title="Pop out to new window">
