@@ -31,6 +31,13 @@ interface IndustryMermaidDiagramProps {
    * mode. Any CSS length (e.g. '400px', '60vh'). Defaults to '400px'.
    */
   maxHeight?: string;
+  /**
+   * When true, keeps the container's border, background fill, padding, and
+   * vertical margin (the default framed look). Set to false to render the
+   * diagram bare — useful when the host already frames the diagram (e.g.
+   * inside a card with its own border).
+   */
+  showChrome?: boolean;
 }
 
 // Define mermaid type
@@ -67,6 +74,7 @@ export function IndustryMermaidDiagram({
   onExpandClick,
   onOpenInTab,
   maxHeight = '400px',
+  showChrome = true,
 }: IndustryMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
@@ -311,15 +319,17 @@ ${errorDetails.code}
           position: 'relative',
           maxHeight, // Smart height limit - diagrams fit within the configured height
           display: 'block',
-          backgroundColor: hasRendered
+          backgroundColor: showChrome
             ? theme.colors.backgroundSecondary
-            : theme.colors.backgroundSecondary,
-          border: hasRendered
-            ? `1px solid ${theme.colors.border}`
-            : `1px solid ${theme.colors.border}`,
-          borderRadius: theme.radii[2],
-          padding: hasRendered ? theme.space[3] : theme.space[4],
-          margin: `${theme.space[4]}px 0`,
+            : 'transparent',
+          border: showChrome ? `1px solid ${theme.colors.border}` : 'none',
+          borderRadius: showChrome ? theme.radii[2] : 0,
+          padding: showChrome
+            ? hasRendered
+              ? theme.space[3]
+              : theme.space[4]
+            : 0,
+          margin: showChrome ? `${theme.space[4]}px 0` : 0,
           // Enable horizontal scrolling for wide diagrams, vertical for tall ones
           overflowX: hasRendered ? 'auto' : 'visible',
           overflowY: hasRendered ? 'auto' : 'visible',

@@ -22,6 +22,12 @@ interface IndustryLazyMermaidDiagramProps {
    * (e.g. '400px', '60vh'). Forwarded to `IndustryMermaidDiagram`.
    */
   maxHeight?: string;
+  /**
+   * When true, keeps the container's border, background fill, padding, and
+   * vertical margin (the default framed look). Set to false to render the
+   * diagram bare. Forwarded to `IndustryMermaidDiagram`.
+   */
+  showChrome?: boolean;
 }
 
 export function IndustryLazyMermaidDiagram({
@@ -34,6 +40,7 @@ export function IndustryLazyMermaidDiagram({
   onExpandClick,
   onOpenInTab,
   maxHeight,
+  showChrome,
 }: IndustryLazyMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
@@ -89,11 +96,11 @@ export function IndustryLazyMermaidDiagram({
   const getPlaceholderStyle = () => {
     return {
       position: 'relative' as const,
-      margin: `${theme.space[4]}px 0`,
-      padding: theme.space[5],
-      border: `1px solid ${theme.colors.border}`,
-      borderRadius: theme.radii[2],
-      backgroundColor: theme.colors.backgroundSecondary,
+      margin: showChrome ? `${theme.space[4]}px 0` : 0,
+      padding: showChrome ? theme.space[5] : 0,
+      border: showChrome ? `1px solid ${theme.colors.border}` : 'none',
+      borderRadius: showChrome ? theme.radii[2] : 0,
+      backgroundColor: showChrome ? theme.colors.backgroundSecondary : 'transparent',
       minHeight: '200px',
       display: 'flex',
       justifyContent: 'center',
@@ -181,6 +188,7 @@ export function IndustryLazyMermaidDiagram({
           onExpandClick={onExpandClick}
           onOpenInTab={onOpenInTab}
           maxHeight={maxHeight}
+          showChrome={showChrome}
         />
       ) : (
         <div style={getPlaceholderStyle()}>
