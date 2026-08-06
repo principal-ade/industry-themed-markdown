@@ -128,10 +128,18 @@ export function IndustryMermaidDiagram({
       if (!mermaid || !containerElement) return;
 
       try {
-        // Use mermaid's built-in default palette — no themeVariables overrides.
         mermaid.initialize({
           startOnLoad: false,
           theme: 'default',
+          themeVariables: {
+            lineColor: theme.colors.text,
+            arrowheadColor: theme.colors.text,
+            edgeColor: theme.colors.text,
+            transitionColor: theme.colors.text,
+            signalColor: theme.colors.text,
+            signalTextColor: theme.colors.text,
+            loopTextColor: theme.colors.text,
+          },
           securityLevel: 'loose',
           logLevel: 'error',
         });

@@ -1,4 +1,4 @@
-import { ThemeProvider, theme as defaultTheme } from '@principal-ade/industry-theme';
+import { ThemeProvider, slateNeonTheme } from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
@@ -9,7 +9,7 @@ const meta: Meta<typeof MermaidMarkdownPresentation> = {
   component: MermaidMarkdownPresentation,
   decorators: [
     Story => (
-      <ThemeProvider theme={defaultTheme}>
+      <ThemeProvider theme={slateNeonTheme}>
         <div style={{ height: '100vh', width: '100%' }}>
           <Story />
         </div>
@@ -20,7 +20,7 @@ const meta: Meta<typeof MermaidMarkdownPresentation> = {
     layout: 'fullscreen',
   },
   args: {
-    theme: defaultTheme,
+    theme: slateNeonTheme,
   },
 };
 
@@ -277,17 +277,17 @@ export const FitStrategies: Story = {
           <div
             style={{
               padding: '4px 12px',
-              color: defaultTheme.colors.textSecondary,
-              fontSize: defaultTheme.fontSizes[1],
-              fontFamily: defaultTheme.fonts.monospace,
-              borderBottom: `1px solid ${defaultTheme.colors.border}`,
+              color: slateNeonTheme.colors.textSecondary,
+              fontSize: slateNeonTheme.fontSizes[1],
+              fontFamily: slateNeonTheme.fonts.monospace,
+              borderBottom: `1px solid ${slateNeonTheme.colors.border}`,
             }}
           >
             fitStrategy=&quot;{strategy}&quot;
           </div>
           <div style={{ flex: 1, minHeight: 0 }}>
             <MermaidMarkdownPresentation
-              theme={defaultTheme}
+              theme={slateNeonTheme}
               slides={[wideSlide]}
               mermaidFitStrategy={strategy}
               showNavigation={false}
@@ -299,7 +299,7 @@ export const FitStrategies: Story = {
   ),
   decorators: [
     Story => (
-      <ThemeProvider theme={defaultTheme}>
+      <ThemeProvider theme={slateNeonTheme}>
         <div style={{ height: '100vh', width: '100%', padding: 16 }}>
           <Story />
         </div>
