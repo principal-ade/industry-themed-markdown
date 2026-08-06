@@ -26,6 +26,11 @@ interface IndustryMermaidDiagramProps {
    * in-app modal that `onExpandClick` drives.
    */
   onOpenInTab?: () => void;
+  /**
+   * Max height for the diagram container in regular (non-modal, non-full-slide)
+   * mode. Any CSS length (e.g. '400px', '60vh'). Defaults to '400px'.
+   */
+  maxHeight?: string;
 }
 
 // Define mermaid type
@@ -61,6 +66,7 @@ export function IndustryMermaidDiagram({
   isFullSlide = false,
   onExpandClick,
   onOpenInTab,
+  maxHeight = '400px',
 }: IndustryMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
@@ -207,8 +213,11 @@ export function IndustryMermaidDiagram({
               }
             }
           } else {
-            // Default sizing to fit within the 400px container height
-            svgElement.style.maxHeight = '360px'; // Leave room for padding
+            // Default sizing to fit within the configured container height.
+            // Leave room for the container's padding/border so the SVG never
+            // triggers vertical overflow on its own.
+            const svgMaxHeight = `calc(${maxHeight} - ${theme.space[3] * 2 + 2}px)`;
+            svgElement.style.maxHeight = svgMaxHeight;
             svgElement.style.width = '100%'; // Fill container width
             svgElement.style.maxWidth = '100%'; // Respect parent container width
             // Let container handle overflow with scrolling
@@ -233,7 +242,7 @@ export function IndustryMermaidDiagram({
     };
 
     renderDiagram();
-  }, [hasRendered, code, id, theme, containerElement, onError, isModalMode, isFullSlide]);
+  }, [hasRendered, code, id, theme, containerElement, onError, isModalMode, isFullSlide, maxHeight]);
 
   // Handle copy error action
   const handleCopyError = async () => {
@@ -300,7 +309,7 @@ ${errorDetails.code}
       : {
           // Regular mode: apply constraints
           position: 'relative',
-          maxHeight: '400px', // Smart height limit - diagrams initially fit within 400px
+          maxHeight, // Smart height limit - diagrams fit within the configured height
           display: 'block',
           backgroundColor: hasRendered
             ? theme.colors.backgroundSecondary

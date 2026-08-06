@@ -17,6 +17,11 @@ interface IndustryLazyMermaidDiagramProps {
    * button next to the fullscreen/expand button.
    */
   onOpenInTab?: () => void;
+  /**
+   * Max height for the diagram container in regular mode. Any CSS length
+   * (e.g. '400px', '60vh'). Forwarded to `IndustryMermaidDiagram`.
+   */
+  maxHeight?: string;
 }
 
 export function IndustryLazyMermaidDiagram({
@@ -28,6 +33,7 @@ export function IndustryLazyMermaidDiagram({
   theme: themeOverride,
   onExpandClick,
   onOpenInTab,
+  maxHeight,
 }: IndustryLazyMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
@@ -174,6 +180,7 @@ export function IndustryLazyMermaidDiagram({
           theme={theme}
           onExpandClick={onExpandClick}
           onOpenInTab={onOpenInTab}
+          maxHeight={maxHeight}
         />
       ) : (
         <div style={getPlaceholderStyle()}>
