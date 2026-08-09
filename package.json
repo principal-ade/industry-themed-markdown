@@ -49,6 +49,7 @@
     "@types/d3-hierarchy": "^3.1.7",
     "@types/flexsearch": "^0.7.6",
     "@uiw/react-textarea-code-editor": "^3.1.1",
+    "beautiful-mermaid": "^1.1.3",
     "d3-hierarchy": "^3.1.2",
     "flexsearch": "^0.8.205",
     "ignore": "^7.0.5",

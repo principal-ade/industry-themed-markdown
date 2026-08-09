@@ -2,7 +2,7 @@ import { Theme, theme as defaultTheme } from '@principal-ade/industry-theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
-import { IndustryMermaidDiagram } from './IndustryMermaidDiagram';
+import { IndustryMermaidDiagram, MermaidRenderer } from './IndustryMermaidDiagram';
 
 type AnimationType =
   | 'linear'
@@ -30,6 +30,11 @@ interface IndustryZoomableMermaidDiagramProps {
   disableFit?: boolean;
   /** Minimum time in ms the reveal overlay stays up (default: 300) */
   overlayMinDurationMs?: number;
+  /**
+   * Rendering engine selection. Forwarded to `IndustryMermaidDiagram`.
+   * Defaults to 'auto' (beautiful-mermaid for supported types, mermaid.js otherwise).
+   */
+  renderer?: MermaidRenderer;
 }
 
 export function IndustryZoomableMermaidDiagram({
@@ -40,6 +45,7 @@ export function IndustryZoomableMermaidDiagram({
   padding = 0.9, // Use 90% of available space to leave some breathing room
   disableFit = false,
   overlayMinDurationMs = 300,
+  renderer,
 }: IndustryZoomableMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
@@ -322,7 +328,13 @@ export function IndustryZoomableMermaidDiagram({
                     transition: 'opacity 200ms ease',
                   }}
                 >
-                  <IndustryMermaidDiagram code={code} id={id} isModalMode={true} theme={theme} />
+                  <IndustryMermaidDiagram
+                    code={code}
+                    id={id}
+                    isModalMode={true}
+                    theme={theme}
+                    renderer={renderer}
+                  />
                 </div>
               </TransformComponent>
             </>

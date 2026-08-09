@@ -2,7 +2,7 @@ import { Theme, theme as defaultTheme } from '@principal-ade/industry-theme';
 import { MoveRight } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { IndustryMermaidDiagram } from './IndustryMermaidDiagram';
+import { IndustryMermaidDiagram, MermaidRenderer } from './IndustryMermaidDiagram';
 
 interface IndustryLazyMermaidDiagramProps {
   code: string;
@@ -28,6 +28,11 @@ interface IndustryLazyMermaidDiagramProps {
    * diagram bare. Forwarded to `IndustryMermaidDiagram`.
    */
   showChrome?: boolean;
+  /**
+   * Rendering engine selection. Forwarded to `IndustryMermaidDiagram`.
+   * Defaults to 'auto' (beautiful-mermaid for supported types, mermaid.js otherwise).
+   */
+  renderer?: MermaidRenderer;
 }
 
 export function IndustryLazyMermaidDiagram({
@@ -41,6 +46,7 @@ export function IndustryLazyMermaidDiagram({
   onOpenInTab,
   maxHeight,
   showChrome,
+  renderer,
 }: IndustryLazyMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
@@ -189,6 +195,7 @@ export function IndustryLazyMermaidDiagram({
           onOpenInTab={onOpenInTab}
           maxHeight={maxHeight}
           showChrome={showChrome}
+          renderer={renderer}
         />
       ) : (
         <div style={getPlaceholderStyle()}>

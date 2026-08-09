@@ -6,8 +6,24 @@
  */
 
 import { Theme, theme as defaultTheme } from '@principal-ade/industry-theme';
+import { renderMermaidSVG } from 'beautiful-mermaid';
 import { Expand, Copy, Check, ArrowUpRight } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+
+import {
+  buildBeautifulMermaidOptions,
+  isBeautifulMermaidSupported,
+  stripBeautifulFontImports,
+} from '../utils/beautifulMermaid';
+
+/**
+ * Which rendering engine to use:
+ * - 'auto' (default): beautiful-mermaid for supported diagram types
+ *   (graph/flowchart, sequence, class, ER, state, xychart), mermaid.js for the rest.
+ * - 'mermaid': always use mermaid.js.
+ * - 'beautiful': always use beautiful-mermaid; errors surface instead of falling back.
+ */
+export type MermaidRenderer = 'auto' | 'mermaid' | 'beautiful';
 
 interface IndustryMermaidDiagramProps {
   code: string;
@@ -38,6 +54,12 @@ interface IndustryMermaidDiagramProps {
    * inside a card with its own border).
    */
   showChrome?: boolean;
+  /**
+   * Rendering engine selection (see {@link MermaidRenderer}). Defaults to
+   * 'auto', which uses beautiful-mermaid when the diagram type is supported
+   * and falls back to mermaid.js otherwise.
+   */
+  renderer?: MermaidRenderer;
 }
 
 // Define mermaid type
@@ -62,6 +84,58 @@ const getMermaidSync = (): MermaidAPI | null => {
   return null;
 };
 
+/**
+ * Shared post-render sizing: relax mermaid's default constraints and fit the
+ * SVG to the container based on the current display mode. Both renderers
+ * produce an `<svg>` element, so this runs for mermaid.js and beautiful-mermaid.
+ */
+function applySvgSizing(
+  svgElement: SVGElement,
+  opts: { isFullSlide: boolean; isModalMode: boolean; maxHeight: string; theme: Theme },
+) {
+  const { isFullSlide, isModalMode, maxHeight, theme } = opts;
+
+  svgElement.style.maxWidth = 'none';
+  svgElement.style.maxHeight = 'none';
+  svgElement.style.width = 'auto';
+  svgElement.style.height = 'auto';
+  svgElement.style.display = 'block';
+  svgElement.style.margin = '0 auto';
+
+  if (!svgElement.getAttribute('preserveAspectRatio')) {
+    svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  }
+
+  if (isFullSlide) {
+    svgElement.style.width = '100%';
+    svgElement.style.height = '100%';
+    svgElement.style.maxWidth = '100%';
+    svgElement.style.maxHeight = '100%';
+    svgElement.style.objectFit = 'contain';
+  } else if (isModalMode) {
+    svgElement.style.width = 'auto';
+    svgElement.style.height = 'auto';
+    svgElement.style.maxWidth = 'none';
+    svgElement.style.maxHeight = 'none';
+    svgElement.style.minWidth = 'auto';
+    svgElement.style.minHeight = 'auto';
+
+    const viewBox = svgElement.getAttribute('viewBox');
+    if (viewBox) {
+      const [, , width, height] = viewBox.split(' ').map(Number);
+      if (width && height) {
+        svgElement.setAttribute('width', width.toString());
+        svgElement.setAttribute('height', height.toString());
+      }
+    }
+  } else {
+    const svgMaxHeight = `calc(${maxHeight} - ${theme.space[3] * 2 + 2}px)`;
+    svgElement.style.maxHeight = svgMaxHeight;
+    svgElement.style.width = '100%';
+    svgElement.style.maxWidth = '100%';
+  }
+}
+
 export function IndustryMermaidDiagram({
   code,
   id,
@@ -75,6 +149,7 @@ export function IndustryMermaidDiagram({
   onOpenInTab,
   maxHeight = '400px',
   showChrome = true,
+  renderer = 'auto',
 }: IndustryMermaidDiagramProps) {
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
@@ -158,8 +233,51 @@ export function IndustryMermaidDiagram({
     if (!hasRendered) return;
 
     const renderDiagram = async () => {
+      if (!containerElement) return;
+
+      const useBeautiful =
+        renderer === 'beautiful' || (renderer === 'auto' && isBeautifulMermaidSupported(code));
+
+      if (useBeautiful) {
+        try {
+          const svg = renderMermaidSVG(code, buildBeautifulMermaidOptions(theme));
+          // Strip the Google Fonts @import lines — the theme font family stays
+          // declared in the SVG's `text { font-family }` rule, so diagrams
+          // render correctly offline.
+          containerElement.innerHTML = stripBeautifulFontImports(svg);
+
+          const svgElement = containerElement.querySelector('svg');
+          if (svgElement) {
+            applySvgSizing(svgElement, { isFullSlide, isModalMode, maxHeight, theme });
+          }
+
+          setErrorDetails(null);
+          if (onError) onError(false);
+          return;
+        } catch (err: unknown) {
+          if (renderer === 'beautiful') {
+            // Forced beautiful renderer: surface the error instead of falling back.
+            console.error('Beautiful-mermaid rendering error:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to render diagram';
+            setErrorDetails({ code, message: errorMessage });
+            if (onError) onError(true);
+            if (containerElement) containerElement.innerHTML = '';
+            return;
+          }
+          // 'auto' mode: fall through to mermaid.js for this diagram.
+        }
+      }
+
       const mermaid = getMermaidSync();
-      if (!mermaid || !containerElement) return;
+      if (!mermaid) {
+        // No mermaid.js loaded and beautiful-mermaid already failed (or doesn't
+        // support this diagram type) — surface an error instead of leaving the
+        // placeholder stuck on "Loading...".
+        console.error('Mermaid rendering error: no mermaid renderer available');
+        setErrorDetails({ code, message: 'No diagram renderer available (mermaid not loaded)' });
+        if (onError) onError(true);
+        return;
+      }
 
       try {
         mermaid.initialize({
@@ -195,61 +313,9 @@ export function IndustryMermaidDiagram({
           bindFunctions(containerElement);
         }
 
-        // Override mermaid's max-width constraint to allow full container usage
         const svgElement = containerElement.querySelector('svg');
         if (svgElement) {
-          // Remove mermaid's default constraints
-          svgElement.style.maxWidth = 'none';
-          svgElement.style.maxHeight = 'none';
-          svgElement.style.width = 'auto';
-          svgElement.style.height = 'auto';
-          svgElement.style.display = 'block';
-          svgElement.style.margin = '0 auto';
-
-          // Ensure SVG preserves aspect ratio
-          if (!svgElement.getAttribute('preserveAspectRatio')) {
-            svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-          }
-
-          // Smart sizing: ensure diagrams initially fit within height limit
-          // Note: Zoom is applied separately in its own useEffect to avoid re-rendering
-          if (isFullSlide) {
-            // Full-slide mode: scale diagram to fit within slide bounds
-            svgElement.style.width = '100%';
-            svgElement.style.height = '100%';
-            svgElement.style.maxWidth = '100%';
-            svgElement.style.maxHeight = '100%';
-            svgElement.style.objectFit = 'contain';
-          } else if (isModalMode) {
-            // Modal mode: remove ALL constraints for full zoom capability
-            svgElement.style.width = 'auto';
-            svgElement.style.height = 'auto';
-            svgElement.style.maxWidth = 'none';
-            svgElement.style.maxHeight = 'none';
-            svgElement.style.minWidth = 'auto';
-            svgElement.style.minHeight = 'auto';
-
-            // Get the viewBox to determine natural size
-            const viewBox = svgElement.getAttribute('viewBox');
-            if (viewBox) {
-              const [, , width, height] = viewBox.split(' ').map(Number);
-              if (width && height) {
-                // Set explicit dimensions for zoom calculations
-                // Don't scale here - let the parent component handle scaling
-                svgElement.setAttribute('width', width.toString());
-                svgElement.setAttribute('height', height.toString());
-              }
-            }
-          } else {
-            // Default sizing to fit within the configured container height.
-            // Leave room for the container's padding/border so the SVG never
-            // triggers vertical overflow on its own.
-            const svgMaxHeight = `calc(${maxHeight} - ${theme.space[3] * 2 + 2}px)`;
-            svgElement.style.maxHeight = svgMaxHeight;
-            svgElement.style.width = '100%'; // Fill container width
-            svgElement.style.maxWidth = '100%'; // Respect parent container width
-            // Let container handle overflow with scrolling
-          }
+          applySvgSizing(svgElement, { isFullSlide, isModalMode, maxHeight, theme });
         } else {
           console.warn('No SVG element found after mermaid render');
         }
@@ -270,7 +336,18 @@ export function IndustryMermaidDiagram({
     };
 
     renderDiagram();
-  }, [hasRendered, code, id, theme, containerElement, onError, isModalMode, isFullSlide, maxHeight]);
+  }, [
+    hasRendered,
+    code,
+    id,
+    theme,
+    containerElement,
+    onError,
+    isModalMode,
+    isFullSlide,
+    maxHeight,
+    renderer,
+  ]);
 
   // Handle copy error action
   const handleCopyError = async () => {
@@ -339,17 +416,11 @@ ${errorDetails.code}
           position: 'relative',
           maxHeight, // Smart height limit - diagrams fit within the configured height
           display: 'block',
-          backgroundColor: showChrome
-            ? theme.colors.backgroundSecondary
-            : 'transparent',
+          backgroundColor: showChrome ? theme.colors.backgroundSecondary : 'transparent',
           ...(showChrome ? gridBackground : undefined),
           border: showChrome ? `1px solid ${theme.colors.border}` : 'none',
           borderRadius: showChrome ? theme.radii[2] : 0,
-          padding: showChrome
-            ? hasRendered
-              ? theme.space[3]
-              : theme.space[4]
-            : 0,
+          padding: showChrome ? (hasRendered ? theme.space[3] : theme.space[4]) : 0,
           margin: showChrome ? `${theme.space[4]}px 0` : 0,
           // Enable horizontal scrolling for wide diagrams, vertical for tall ones
           overflowX: hasRendered ? 'auto' : 'visible',
