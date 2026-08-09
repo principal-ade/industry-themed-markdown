@@ -82,3 +82,6 @@ export {
   decreaseFontScale,
   resetFontScale,
 } from '@principal-ade/industry-theme';
+
+// Engineering log themes (refined in-repo)
+export { engineeringLogTheme, engineeringPaperTheme } from './themes/engineeringLogThemes';

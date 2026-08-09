@@ -79,6 +79,26 @@ export function IndustryMermaidDiagram({
   // Get theme from context or use override
   const theme = themeOverride ?? defaultTheme;
 
+  // Optional engineering-paper grid: a custom color role that only themes that
+  // opt in define. When present (and chrome is shown), the diagram container is
+  // rendered over a faint minor+major graph grid so the framed diagram reads
+  // like a drawing on engineering paper.
+  const gridColor = (theme.colors as Record<string, string | undefined>).backgroundGrid;
+  const gridBackground = gridColor
+    ? {
+        // Same 1px weight for every line; the major grid sits at a *lower*
+        // alpha than the minor lines so it never reads as heavier, while the
+        // minor lines carry a touch more presence.
+        backgroundImage: [
+          `linear-gradient(to right, ${gridColor}1A 1px, transparent 1px)`,
+          `linear-gradient(to bottom, ${gridColor}1A 1px, transparent 1px)`,
+          `linear-gradient(to right, ${gridColor}12 1px, transparent 1px)`,
+          `linear-gradient(to bottom, ${gridColor}12 1px, transparent 1px)`,
+        ].join(', '),
+        backgroundSize: '24px 24px, 24px 24px, 120px 120px, 120px 120px',
+      }
+    : undefined;
+
   const [errorDetails, setErrorDetails] = useState<{ code: string; message: string } | null>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [hasRendered, setHasRendered] = useState(false);
@@ -322,6 +342,7 @@ ${errorDetails.code}
           backgroundColor: showChrome
             ? theme.colors.backgroundSecondary
             : 'transparent',
+          ...(showChrome ? gridBackground : undefined),
           border: showChrome ? `1px solid ${theme.colors.border}` : 'none',
           borderRadius: showChrome ? theme.radii[2] : 0,
           padding: showChrome
