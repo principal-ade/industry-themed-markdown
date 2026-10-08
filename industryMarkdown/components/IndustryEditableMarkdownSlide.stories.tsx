@@ -3,7 +3,6 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 
 import { IndustryEditableMarkdownSlide } from './IndustryEditableMarkdownSlide';
-import { IndustryEditableMermaidDiagram } from './IndustryEditableMermaidDiagram';
 
 const meta: Meta<typeof IndustryEditableMarkdownSlide> = {
   title: 'IndustryMarkdown/IndustryEditableMarkdownSlide',
@@ -294,20 +293,6 @@ graph TD
 - [ ] Add version history
 - [ ] Add collaborative editing
 
-## Code Integration Example
-
-If you want individual diagram edit buttons within a slide:
-
-\`\`\`tsx
-// Instead of markdown mermaid blocks, use:
-<IndustryEditableMermaidDiagram 
-  code="graph TD\\nA --> B"
-  id="diagram-1"
-  theme={theme}
-  editable={true}
-/>
-\`\`\`
-
 ## Links and References
 
 - [Mermaid Documentation](https://mermaid-js.github.io/mermaid/)
@@ -353,80 +338,6 @@ Try editing and saving multiple times to see both success and failure cases.`,
       console.log('Save successful:', content);
     },
   },
-};
-
-// Hybrid example showing both markdown editing and individual diagram editing
-const HybridEditingExample = () => {
-  const [markdownContent, setMarkdownContent] = useState(`# Hybrid Editing Demo
-
-This slide shows **both** editing approaches working together.
-
-## Regular Markdown Content
-
-This text is part of the markdown slide and gets edited when you click the slide's **Edit** button.
-
-- You can edit this list
-- Add new items
-- Modify the entire content structure
-
-## Individual Mermaid Diagram
-
-Below is a **separate** editable Mermaid diagram with its own **Edit Diagram** button:`);
-
-  const [diagramCode, setDiagramCode] = useState(`graph LR
-    A[Slide Editor] --> B[Edit entire markdown]
-    C[Diagram Editor] --> D[Edit specific diagram]
-    B --> E[Saves slide content]
-    D --> F[Saves diagram only]
-    
-    style A fill:#e1f5fe
-    style C fill:#f3e5f5
-    style E fill:#e8f5e8
-    style F fill:#fff3e0`);
-
-  return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Editable Markdown Slide */}
-      <div style={{ flex: 1 }}>
-        <IndustryEditableMarkdownSlide
-          content={markdownContent}
-          slideIdPrefix="hybrid"
-          slideIndex={0}
-          isVisible={true}
-          theme={theme}
-          editable={true}
-          showEditButton={true}
-          autoSaveDelay={2000}
-          onContentChange={setMarkdownContent}
-          onSave={async content => {
-            console.log('Markdown slide saved:', content);
-            await new Promise(resolve => setTimeout(resolve, 300));
-          }}
-        />
-      </div>
-
-      {/* Individual Editable Mermaid Diagram */}
-      <div style={{ height: '400px', border: '2px solid #e0e0e0', borderRadius: '8px' }}>
-        <IndustryEditableMermaidDiagram
-          code={diagramCode}
-          id="hybrid-diagram"
-          theme={theme}
-          editable={true}
-          showEditButton={true}
-          autoSaveDelay={2000}
-          onCodeChange={setDiagramCode}
-          onSave={async code => {
-            console.log('Mermaid diagram saved:', code);
-            await new Promise(resolve => setTimeout(resolve, 300));
-          }}
-        />
-      </div>
-    </div>
-  );
-};
-
-export const HybridEditing: Story = {
-  render: () => <HybridEditingExample />,
 };
 
 export const PracticalDocumentationExample: Story = {

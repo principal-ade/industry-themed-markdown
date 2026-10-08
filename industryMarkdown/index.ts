@@ -28,10 +28,6 @@ export type { SkillMarkdownProps } from './components/SkillMarkdown';
 export { IndustryEditableMarkdownSlide } from './components/IndustryEditableMarkdownSlide';
 export type { IndustryEditableMarkdownSlideProps } from './components/IndustryEditableMarkdownSlide';
 
-// Industry-themed editable mermaid diagram component
-export { IndustryEditableMermaidDiagram } from './components/IndustryEditableMermaidDiagram';
-export type { IndustryEditableMermaidDiagramProps } from './components/IndustryEditableMermaidDiagram';
-
 // Industry-themed markdown component creators
 export { createIndustryMarkdownComponents } from './components/IndustryMarkdownComponents';
 
