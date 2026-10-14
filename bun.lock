@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "themed-markdown",
@@ -24,7 +25,7 @@
       "devDependencies": {
         "@babel/preset-env": "^7.28.3",
         "@eslint/js": "^9.32.0",
-        "@principal-ade/industry-theme": "^0.1.24",
+        "@principal-ade/industry-theme": "^0.1.25",
         "@principal-ade/panels": "^1.0.84",
         "@storybook/addon-docs": "^10.1.11",
         "@storybook/addon-onboarding": "^10.1.11",
@@ -514,7 +515,7 @@
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
 
-    "@principal-ade/industry-theme": ["@principal-ade/industry-theme@0.1.24", "", { "peerDependencies": { "react": ">=19.0.0" } }, "sha512-fgsLjP09CRNr71cyroe98Ef9x2YFqY6GYUQz/vY0CsWiPy7kd3fWDue+Mm6JNSQdrfhqYxQ6LX0iPkYbHukopA=="],
+    "@principal-ade/industry-theme": ["@principal-ade/industry-theme@0.1.25", "", { "peerDependencies": { "react": ">=19.0.0" } }, "sha512-5PFvzU3oiAN+bV7ALnz8HNILvKPV6mZTFMxr1uLSZaNZFzByy+D7fIQhFwkSEHoeixqPIvf3Igm8/GwFcIJnow=="],
 
     "@principal-ade/markdown-utils": ["@principal-ade/markdown-utils@0.3.4", "", {}, "sha512-ZvJQ78xkBMqIvp2vnzetPrn1AnOJS5w+lH/QzWDpgMEQq3UFuFGfGU912xL6da21qPmI5qiskHo6sGsrPr/ooQ=="],
 

@@ -1,4 +1,4 @@
-import { theme } from '@principal-ade/industry-theme';
+import { slateNeonTheme as theme } from '@principal-ade/industry-theme';
 import { parseMarkdownIntoPresentation } from '@principal-ade/markdown-utils';
 import type { Meta, StoryObj } from '@storybook/react';
 

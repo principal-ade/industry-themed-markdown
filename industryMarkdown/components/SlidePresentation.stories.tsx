@@ -1,4 +1,4 @@
-import { ThemeProvider, theme as defaultTheme } from '@principal-ade/industry-theme';
+import { ThemeProvider, slateNeonTheme as defaultTheme } from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
@@ -9,7 +9,7 @@ const meta: Meta<typeof SlidePresentation> = {
   component: SlidePresentation,
   decorators: [
     Story => (
-      <ThemeProvider>
+      <ThemeProvider theme={defaultTheme}>
         <div style={{ height: '100vh', width: '100%' }}>
           <Story />
         </div>

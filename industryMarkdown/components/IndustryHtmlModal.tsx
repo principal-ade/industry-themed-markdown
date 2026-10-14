@@ -27,7 +27,13 @@ export const useIndustryHtmlModal = () => {
 export function IndustryHtmlModal({ isOpen, onClose, htmlContent, theme }: IndustryHtmlModalProps) {
   if (!isOpen) return null;
 
-  const overlayStyle: React.CSSProperties = {
+  // See IndustryMermaidModal: a full-viewport overlay must opt out of the
+  // host window's titlebar drag region (`-webkit-app-region: drag`), which is
+  // computed by screen area and ignores portaled/fixed content — otherwise a
+  // press over the overlay's top edge drags the window instead of clicking.
+  const overlayStyle: React.CSSProperties & {
+    WebkitAppRegion?: 'drag' | 'no-drag';
+  } = {
     position: 'fixed',
     top: 0,
     left: 0,
@@ -39,6 +45,7 @@ export function IndustryHtmlModal({ isOpen, onClose, htmlContent, theme }: Indus
     justifyContent: 'center',
     zIndex: 50,
     padding: theme.space[6],
+    WebkitAppRegion: 'no-drag',
   };
 
   const modalStyle: React.CSSProperties = {

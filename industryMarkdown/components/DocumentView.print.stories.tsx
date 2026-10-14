@@ -1,6 +1,6 @@
 import {
   ThemeProvider,
-  theme as defaultTheme,
+  slateNeonTheme as defaultTheme,
   regalTheme,
   matrixTheme,
   slateTheme,

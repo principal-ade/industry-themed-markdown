@@ -44,23 +44,34 @@ export function IndustryMermaidModal({
     return null;
   }
 
+  // The host window may be frameless (custom titlebar using
+  // `-webkit-app-region: drag`). Drag regions are computed by *screen area* and
+  // do not account for content portaled to <body>, so the backdrop would not
+  // subtract from the titlebar's draggable region. The effect: a pointer press
+  // over the top of the modal (e.g. the close button) starts a window drag
+  // instead of clicking — hover still works, clicks silently die. Declaring the
+  // full-viewport overlay `no-drag` removes that region. (`-webkit-app-region`
+  // is not inherited, but drag regions are resolved by area, so a no-drag rect
+  // on the overlay root covers its descendants.)
+  const backdropStyle: React.CSSProperties & {
+    WebkitAppRegion?: 'drag' | 'no-drag';
+  } = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)', // Darker backdrop overlay
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 50,
+    padding: theme.space[4],
+    WebkitAppRegion: 'no-drag',
+  };
+
   const modalContent = (
-    <div
-      onClick={handleBackdropClick}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)', // Darker backdrop overlay
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 50,
-        padding: theme.space[4],
-      }}
-    >
+    <div onClick={handleBackdropClick} style={backdropStyle}>
       <div
         ref={modalRef}
         onClick={e => e.stopPropagation()}

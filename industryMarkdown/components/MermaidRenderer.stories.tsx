@@ -1,5 +1,6 @@
-import defaultTheme, {
+import {
   iceTangerineTheme,
+  slateNeonTheme as defaultTheme,
   Theme,
   ThemeProvider,
 } from '@principal-ade/industry-theme';

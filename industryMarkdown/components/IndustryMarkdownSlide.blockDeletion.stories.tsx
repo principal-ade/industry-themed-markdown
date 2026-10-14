@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@principal-ade/industry-theme';
+import { ThemeProvider, slateNeonTheme as defaultTheme } from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 
@@ -127,7 +127,7 @@ const meta: Meta<typeof BlockDeletionDemo> = {
   parameters: { layout: 'fullscreen' },
   decorators: [
     Story => (
-      <ThemeProvider>
+      <ThemeProvider theme={defaultTheme}>
         <Story />
       </ThemeProvider>
     ),

@@ -52,19 +52,25 @@ export function IndustryPlaceholderModal({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 50,
-        padding: theme.space[5],
-      }}
+      style={
+        {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+          padding: theme.space[5],
+          // See IndustryMermaidModal: opt the full-viewport overlay out of the
+          // host window's titlebar drag region so presses over the modal's top
+          // edge aren't swallowed to drag the window.
+          WebkitAppRegion: 'no-drag',
+        } as React.CSSProperties & { WebkitAppRegion?: 'drag' | 'no-drag' }
+      }
       onClick={onClose}
     >
       <div

@@ -1,4 +1,4 @@
-import { ThemeProvider, theme as defaultTheme } from '@principal-ade/industry-theme';
+import { ThemeProvider, slateNeonTheme as defaultTheme } from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 

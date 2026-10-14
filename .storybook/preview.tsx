@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Preview } from '@storybook/react';
-import { ThemeProvider, theme } from '@principal-ade/industry-theme';
+import { ThemeProvider, slateNeonTheme } from '@principal-ade/industry-theme';
 import 'highlight.js/styles/atom-one-dark.css';
 
 // Dynamically import mermaid for Storybook
@@ -36,8 +36,12 @@ const preview: Preview = {
 
   decorators: [
     Story => {
+      // Default to Slate Neon — the theme the electron app resolves to in dev
+      // (`ThemeService` defaults to `slateNeon` and `getThemeByName` falls back
+      // to it). Keeps Storybook color-accurate with the app, including the
+      // theme-driven mermaid/diagram palette.
       return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={slateNeonTheme} initialMode="light">
           <Story />
         </ThemeProvider>
       );
