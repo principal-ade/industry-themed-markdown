@@ -1,4 +1,4 @@
-import { ThemeProvider, slateNeonTheme as defaultTheme } from '@principal-ade/industry-theme';
+import { ThemeProvider, slateNeonTheme as theme } from '@principal-ade/industry-theme';
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 
@@ -9,7 +9,7 @@ const meta: Meta<typeof IndustryEditableMarkdownSlide> = {
   component: IndustryEditableMarkdownSlide,
   decorators: [
     Story => (
-      <ThemeProvider theme={defaultTheme}>
+      <ThemeProvider theme={theme}>
         <div style={{ height: '100vh', width: '100%' }}>
           <Story />
         </div>
@@ -226,7 +226,7 @@ Try editing and saving to see the counters update!`);
       slideIdPrefix="interactive"
       slideIndex={0}
       isVisible={true}
-      theme={defaultTheme}
+      theme={theme}
       editable={true}
       showEditButton={true}
       autoSaveDelay={3000}

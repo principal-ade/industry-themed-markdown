@@ -41,7 +41,7 @@ const preview: Preview = {
       // to it). Keeps Storybook color-accurate with the app, including the
       // theme-driven mermaid/diagram palette.
       return (
-        <ThemeProvider theme={slateNeonTheme} initialMode="light">
+        <ThemeProvider theme={slateNeonTheme} initialMode="dark">
           <Story />
         </ThemeProvider>
       );
@@ -52,7 +52,7 @@ const preview: Preview = {
     theme: {
       name: 'Theme',
       description: 'Global theme for components',
-      defaultValue: 'light',
+      defaultValue: 'dark',
       toolbar: {
         icon: 'circlehollow',
         items: [
@@ -66,7 +66,7 @@ const preview: Preview = {
 
   initialGlobals: {
     backgrounds: {
-      value: 'light'
+      value: 'dark'
     }
   }
 };
