@@ -1280,7 +1280,6 @@ export const createIndustryMarkdownComponents = ({
               color: copied ? theme.colors.success : theme.colors.accent,
               fontSize: '0.875em',
               fontFamily: theme.fonts.monospace,
-              cursor: 'copy',
               backgroundColor: copied ? `${theme.colors.success}22` : undefined,
               padding: copied ? '0.05em 0.3em' : undefined,
               borderRadius: copied ? theme.radii[1] : undefined,
@@ -1294,7 +1293,16 @@ export const createIndustryMarkdownComponents = ({
             } as React.CSSProperties
           }
           className={cleanClassName ? `inline-code ${cleanClassName}` : 'inline-code'}
-          title={copied ? 'Copied!' : 'Right-click to copy'}
+          title={copied ? 'Copied!' : 'Right-click or Cmd/Ctrl-click to copy'}
+          onClick={e => {
+            // Cmd/Ctrl-click copies the inline code text. Plain clicks are
+            // untouched so text selection still works normally.
+            if (e.metaKey || e.ctrlKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              copyInlineToClipboard();
+            }
+          }}
           onDoubleClick={e => {
             // Treat the backtick-delimited span as one word boundary: the
             // native double-click picks a single word (splitting on dots,
