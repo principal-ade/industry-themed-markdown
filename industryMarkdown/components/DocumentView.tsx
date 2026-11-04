@@ -42,6 +42,10 @@ export interface DocumentViewProps {
   // Editing
   editable?: boolean; // When true, checkboxes are interactive. Default: false
 
+  // Highlight copy (flag-gated auto-copy of settled text selections)
+  enableHighlightCopy?: boolean;
+  onCopyText?: (text: string) => void;
+
   // Annotations
   annotations?: Annotation[];
   activeAnnotationId?: string | null;
@@ -73,6 +77,8 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
   theme,
   transparentBackground = false,
   editable = false,
+  enableHighlightCopy = false,
+  onCopyText,
   annotations,
   activeAnnotationId,
   renderAnnotation,
@@ -120,6 +126,8 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           allowedLinkProtocols={allowedLinkProtocols}
           transparentBackground={transparentBackground}
           editable={editable}
+          enableHighlightCopy={enableHighlightCopy}
+          onCopyText={onCopyText}
           containerWidth={width}
           annotations={annotations}
           activeAnnotationId={activeAnnotationId}

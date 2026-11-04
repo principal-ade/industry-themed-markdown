@@ -60,13 +60,6 @@ interface IndustryMarkdownComponentsProps {
   // → data-URL); otherwise resolution falls back to `transformImageUrl`.
   transformImageUri?: (src: string) => string;
   editable?: boolean; // When true, checkboxes are interactive. Default: false
-  // When true, top-level block elements are tagged with their chunk index and
-  // source line range so a highlight can be resolved back to deletable blocks.
-  selectableBlocks?: boolean;
-  // When provided, regular list items render a clickable marker (the bullet /
-  // number) that deletes that item. Receives the item's chunk index and
-  // 1-based source line range within that chunk.
-  onDeleteListItem?: (chunkIndex: number, startLine: number, endLine: number) => void;
 }
 
 // Global cache to track failed images and prevent repeated requests
@@ -364,28 +357,7 @@ export const createIndustryMarkdownComponents = ({
   repositoryInfo,
   transformImageUri,
   editable = false,
-  selectableBlocks = false,
-  onDeleteListItem,
 }: IndustryMarkdownComponentsProps) => {
-  // Build the data attributes that tag a rendered block with its source
-  // coordinates (chunk index + 1-based line range within that chunk). Returns
-  // nothing when block selection is disabled or the node carries no position.
-  const blockMeta = (
-    node: unknown,
-  ): Record<string, string | number> => {
-    if (!selectableBlocks) return {};
-    const position = (
-      node as { position?: { start?: { line?: number }; end?: { line?: number } } }
-    )?.position;
-    const startLine = position?.start?.line;
-    const endLine = position?.end?.line;
-    if (typeof startLine !== 'number' || typeof endLine !== 'number') return {};
-    return {
-      'data-md-chunk': index,
-      'data-md-start': startLine,
-      'data-md-end': endLine,
-    };
-  };
   // Determine if we're in dark mode by checking if background is dark
   // Convert hex to RGB and calculate luminance
   const getLuminance = (hex: string): number => {
@@ -407,7 +379,7 @@ export const createIndustryMarkdownComponents = ({
 
   return {
     // Headings using industryTheme
-    h1: ({ children, node, ...props }: HeadingProps) => (
+    h1: ({ children, ...props }: HeadingProps) => (
       <h1
         style={{
           color: theme.colors.text,
@@ -422,12 +394,11 @@ export const createIndustryMarkdownComponents = ({
           ...headerStyles,
         }}
         {...props}
-        {...blockMeta(node)}
       >
         {children}
       </h1>
     ),
-    h2: ({ children, node, ...props }: HeadingProps) => (
+    h2: ({ children, ...props }: HeadingProps) => (
       <h2
         style={{
           color: theme.colors.text,
@@ -442,12 +413,11 @@ export const createIndustryMarkdownComponents = ({
           ...headerStyles,
         }}
         {...props}
-        {...blockMeta(node)}
       >
         {children}
       </h2>
     ),
-    h3: ({ children, node, ...props }: HeadingProps) => (
+    h3: ({ children, ...props }: HeadingProps) => (
       <h3
         style={{
           color: theme.colors.text,
@@ -459,12 +429,11 @@ export const createIndustryMarkdownComponents = ({
           fontFamily: theme.fonts.heading,
         }}
         {...props}
-        {...blockMeta(node)}
       >
         {children}
       </h3>
     ),
-    h4: ({ children, node, ...props }: HeadingProps) => (
+    h4: ({ children, ...props }: HeadingProps) => (
       <h4
         style={{
           color: theme.colors.text,
@@ -476,12 +445,11 @@ export const createIndustryMarkdownComponents = ({
           fontFamily: theme.fonts.heading,
         }}
         {...props}
-        {...blockMeta(node)}
       >
         {children}
       </h4>
     ),
-    h5: ({ children, node, ...props }: HeadingProps) => (
+    h5: ({ children, ...props }: HeadingProps) => (
       <h5
         style={{
           color: theme.colors.text,
@@ -493,12 +461,11 @@ export const createIndustryMarkdownComponents = ({
           fontFamily: theme.fonts.heading,
         }}
         {...props}
-        {...blockMeta(node)}
       >
         {children}
       </h5>
     ),
-    h6: ({ children, node, ...props }: HeadingProps) => (
+    h6: ({ children, ...props }: HeadingProps) => (
       <h6
         style={{
           color: theme.colors.text,
@@ -510,7 +477,6 @@ export const createIndustryMarkdownComponents = ({
           fontFamily: theme.fonts.heading,
         }}
         {...props}
-        {...blockMeta(node)}
       >
         {children}
       </h6>
@@ -536,7 +502,6 @@ export const createIndustryMarkdownComponents = ({
               fontFamily: theme.fonts.body,
             }}
             {...props}
-            {...blockMeta(node)}
           >
             <InlineMediaContext.Provider value={true}>{children}</InlineMediaContext.Provider>
           </p>
@@ -552,7 +517,6 @@ export const createIndustryMarkdownComponents = ({
             fontFamily: theme.fonts.body,
           }}
           {...props}
-          {...blockMeta(node)}
         >
           {children}
         </p>
@@ -560,7 +524,7 @@ export const createIndustryMarkdownComponents = ({
     },
 
     // Lists
-    ul: ({ children, node, ...props }: MarkdownComponentProps) => (
+    ul: ({ children, ...props }: MarkdownComponentProps) => (
       <ul
         style={{
           color: theme.colors.text,
@@ -572,12 +536,11 @@ export const createIndustryMarkdownComponents = ({
           fontFamily: theme.fonts.body,
         }}
         {...props}
-        {...blockMeta(node)}
       >
         {children}
       </ul>
     ),
-    ol: ({ children, node, ...props }: MarkdownComponentProps) => (
+    ol: ({ children, ...props }: MarkdownComponentProps) => (
       <ol
         style={{
           color: theme.colors.text,
@@ -589,7 +552,6 @@ export const createIndustryMarkdownComponents = ({
           fontFamily: theme.fonts.body,
         }}
         {...props}
-        {...blockMeta(node)}
       >
         {children}
       </ol>
@@ -681,49 +643,6 @@ export const createIndustryMarkdownComponents = ({
         );
       }
 
-      // Regular list item with a clickable marker for deletion.
-      const position = (
-        node as { position?: { start?: { line?: number }; end?: { line?: number } } }
-      )?.position;
-      const itemStart = position?.start?.line;
-      const itemEnd = position?.end?.line;
-      const deletable =
-        selectableBlocks &&
-        !!onDeleteListItem &&
-        typeof itemStart === 'number' &&
-        typeof itemEnd === 'number';
-
-      if (deletable) {
-        return (
-          <li
-            className="md-del-li"
-            style={{
-              marginBottom: theme.space[2],
-              paddingTop: theme.space[1],
-              color: theme.colors.text,
-              lineHeight: theme.lineHeights.relaxed,
-              display: 'flex',
-              alignItems: 'flex-start',
-            }}
-            {...props}
-            {...blockMeta(node)}
-          >
-            <button
-              type="button"
-              className="md-del-marker"
-              aria-label="Delete list item"
-              title="Delete this item"
-              onClick={e => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDeleteListItem(index, itemStart as number, itemEnd as number);
-              }}
-            />
-            <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-          </li>
-        );
-      }
-
       // Regular list item
       return (
         <li
@@ -734,7 +653,6 @@ export const createIndustryMarkdownComponents = ({
             lineHeight: theme.lineHeights.relaxed, // Use relaxed line height (1.75) for better readability
           }}
           {...props}
-          {...blockMeta(node)}
         >
           {children}
         </li>
@@ -742,7 +660,7 @@ export const createIndustryMarkdownComponents = ({
     },
 
     // Block quotes
-    blockquote: ({ children, node, ...props }: MarkdownComponentProps) => (
+    blockquote: ({ children, ...props }: MarkdownComponentProps) => (
       <blockquote
         style={{
           margin: `0 0 ${theme.space[3]}px 0`,
@@ -753,14 +671,13 @@ export const createIndustryMarkdownComponents = ({
           fontFamily: theme.fonts.body,
         }}
         {...props}
-        {...blockMeta(node)}
       >
         {children}
       </blockquote>
     ),
 
     // Horizontal rules
-    hr: ({ node, ...props }: MarkdownComponentProps) => (
+    hr: ({ ...props }: MarkdownComponentProps) => (
       <hr
         style={{
           border: 'none',
@@ -768,12 +685,11 @@ export const createIndustryMarkdownComponents = ({
           margin: `${theme.space[4]}px 0`,
         }}
         {...props}
-        {...blockMeta(node)}
       />
     ),
 
     // Tables
-    table: ({ children, node, ...props }: MarkdownComponentProps) => (
+    table: ({ children, ...props }: MarkdownComponentProps) => (
       <div
         style={{
           overflowX: 'auto',
@@ -781,7 +697,6 @@ export const createIndustryMarkdownComponents = ({
           borderRadius: theme.radii[2],
           border: `1px solid ${theme.colors.border}`,
         }}
-        {...blockMeta(node)}
       >
         <table
           style={{
@@ -1038,6 +953,39 @@ export const createIndustryMarkdownComponents = ({
       const matchLang = /language-(\w+)/.exec(className || '');
       const language = matchLang ? matchLang[1] : null;
       const [copied, setCopied] = useState(false);
+      const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+      const copyInlineToClipboard = () => {
+        const done = () => {
+          setCopied(true);
+          if (copyTimer.current) clearTimeout(copyTimer.current);
+          copyTimer.current = setTimeout(() => setCopied(false), 1200);
+        };
+        const fallbackCopy = () => {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = codeString;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            done();
+          } catch (err) {
+            console.error('Failed to copy:', err);
+          }
+        };
+        try {
+          if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(codeString).then(done).catch(fallbackCopy);
+          } else {
+            fallbackCopy();
+          }
+        } catch {
+          fallbackCopy();
+        }
+      };
 
       let isInline: boolean;
       let isCodeBlock: boolean;
@@ -1135,7 +1083,7 @@ export const createIndustryMarkdownComponents = ({
             };
 
         return (
-          <div style={containerStyle} {...blockMeta(node)}>
+          <div style={containerStyle}>
             <div style={headerStyle}>
               <span
                 style={{
@@ -1329,19 +1277,24 @@ export const createIndustryMarkdownComponents = ({
         <code
           style={
             {
-              color: theme.colors.accent,
+              color: copied ? theme.colors.success : theme.colors.accent,
               fontSize: '0.875em',
               fontFamily: theme.fonts.monospace,
+              cursor: 'copy',
+              backgroundColor: copied ? `${theme.colors.success}22` : undefined,
+              padding: copied ? '0.05em 0.3em' : undefined,
+              borderRadius: copied ? theme.radii[1] : undefined,
               // Ensure text color overrides any highlight.js styles. Inline
               // code is intentionally backgroundless — accent color + monospace
               // is enough to set it apart, and a filled background is reserved
               // for genuinely actionable elements. The --inline-code-* pill vars
               // are left unset so the highlightOverrides rules fall back to
               // their transparent/zero defaults.
-              '--text-color': theme.colors.accent,
+              '--text-color': copied ? theme.colors.success : theme.colors.accent,
             } as React.CSSProperties
           }
           className={cleanClassName ? `inline-code ${cleanClassName}` : 'inline-code'}
+          title={copied ? 'Copied!' : 'Right-click to copy'}
           onDoubleClick={e => {
             // Treat the backtick-delimited span as one word boundary: the
             // native double-click picks a single word (splitting on dots,
@@ -1353,6 +1306,13 @@ export const createIndustryMarkdownComponents = ({
             range.selectNodeContents(e.currentTarget);
             sel.removeAllRanges();
             sel.addRange(range);
+          }}
+          onContextMenu={e => {
+            // Right-click copies the inline code text and suppresses the
+            // native context menu so the action feels instant.
+            e.preventDefault();
+            e.stopPropagation();
+            copyInlineToClipboard();
           }}
           {...props}
         >
